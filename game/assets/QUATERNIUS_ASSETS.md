@@ -1,20 +1,29 @@
 # Quaternius asset integration
 
-Pack: Quaternius Stylized Nature MegaKit
+Pack: Quaternius Stylized Nature MegaKit — Standard
 Creator: Quaternius
 License: CC0 1.0 Universal
 Official pack page: https://quaternius.com/packs/stylizednaturemegakit.html
-Free Standard pack: 68 models, 104.1 MB
-Full Source pack: 116 models; includes Godot/Unity/Unreal projects and shaders.
+Free Standard archive: https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip
+The Standard archive contains 68 models from the full 116-model pack.
 
-Imported GLB models used by Everdawn:
-- tree1.glb, tree2.glb, tree3.glb (tree variants)
-- bush.glb (common bush)
+## Import pipeline
 
-Current public mirror URLs:
-https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/tree1.glb
-https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/tree2.glb
-https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/tree3.glb
-https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/bush.glb
+The Vercel/Godot build downloads the official Standard ZIP and runs
+`scripts/extract_quaternius.py`. The extractor keeps glTF/GLB models and
+only their referenced texture and buffer files, excluding duplicate FBX/OBJ
+and Blender source formats. Assets are imported into
+`res://assets/quaternius/` before Godot exports the game.
 
-The mirror's credits file identifies these models as Quaternius Stylized Nature MegaKit assets and states that they are CC0. These are loaded at runtime because the binary asset archive could not be transferred into this repository through the available GitHub file interface. For a fully self-contained release, the original GLBs should be vendored into res://assets/quaternius/ from the official Standard archive.
+The game loads the Quaternius tree and bush models as PackedScenes and
+instances them around the farm. The archive is not stored as a binary ZIP in
+GitHub; it is retrieved from the public CC0 source during CI.
+
+## Additional notes
+
+- The nature pack provides foliage, plants, rocks and other nature pieces; it
+  does not contain a farmer character or farmhouse.
+- The farmer, farmhouse trim, garden frames, well and fence in this slice are
+  original hand-built geometry rather than third-party stock assets.
+- The original Quaternius license is CC0, allowing personal, educational and
+  commercial use without attribution requirements.
