@@ -158,6 +158,14 @@ func _build_farm() -> void:
     _box(house, Vector3(1.6, 1.25, 0.12), Vector3(2.1, 2.45, 2.88), Color("#82a8a0"))
     _box(house, Vector3(0.14, 1.4, 0.14), Vector3(-2.1, 2.45, 2.96), Color("#f1e4c8"))
     _box(house, Vector3(0.14, 1.4, 0.14), Vector3(2.1, 2.45, 2.96), Color("#f1e4c8"))
+    var house_body := StaticBody3D.new()
+    var house_collision := CollisionShape3D.new()
+    var house_shape := BoxShape3D.new()
+    house_shape.size = Vector3(7.2, 3.6, 5.6)
+    house_collision.shape = house_shape
+    house_collision.position.y = 1.8
+    house_body.add_child(house_collision)
+    house.add_child(house_body)
 
     # Six generous beds with enough room to walk between them.
     for row in range(2):
@@ -304,6 +312,17 @@ func _spawn_model(key: String, pos: Vector3, scale_factor: float, yaw: float = 0
     instance.scale = Vector3.ONE * scale_factor
     instance.rotation.y = yaw
     model_root.add_child(instance)
+    if key.begins_with("tree"):
+        var trunk_body := StaticBody3D.new()
+        trunk_body.position = pos
+        var trunk_collision := CollisionShape3D.new()
+        var trunk_shape := CylinderShape3D.new()
+        trunk_shape.radius = 0.42 * scale_factor
+        trunk_shape.height = 2.5 * scale_factor
+        trunk_collision.shape = trunk_shape
+        trunk_collision.position.y = 1.25 * scale_factor
+        trunk_body.add_child(trunk_collision)
+        model_root.add_child(trunk_body)
 
 func _populate_quaternius_forest() -> void:
     if tree_keys.is_empty(): return
@@ -390,8 +409,9 @@ func _build_ui() -> void:
     layer.add_child(menu)
     var card := PanelContainer.new()
     card.set_anchors_preset(Control.PRESET_CENTER)
-    card.position = Vector2(-220, -155)
-    card.custom_minimum_size = Vector2(440, 310)
+    var card_width := minf(440.0, get_viewport().get_visible_rect().size.x - 32.0)
+    card.position = Vector2(-card_width * 0.5, -155)
+    card.custom_minimum_size = Vector2(card_width, 310)
     menu.add_child(card)
     var menu_stack := VBoxContainer.new()
     menu_stack.alignment = BoxContainer.ALIGNMENT_CENTER
