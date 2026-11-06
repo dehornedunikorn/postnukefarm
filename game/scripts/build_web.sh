@@ -12,7 +12,12 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
-mkdir -p build/web
+mkdir -p build/web assets/quaternius
+
+# Pull the free CC0 Quaternius Standard pack during CI. Keep only glTF/GLB
+# meshes and the textures/buffers they reference, not duplicate FBX/OBJ/Blend files.
+curl -fsSL "https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip" -o "$TMP_DIR/quaternius.zip"
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius.zip" --destination assets/quaternius
 
 curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o "$TMP_DIR/godot.zip"
 unzip -q "$TMP_DIR/godot.zip" -d "$TMP_DIR/godot"
