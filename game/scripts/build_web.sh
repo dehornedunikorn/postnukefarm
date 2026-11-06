@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Vercel invokes this script from the repository root. Always export the
+# actual Godot project in /game, not the legacy Python prototype at repo root.
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_DIR"
+
 GODOT_VERSION="4.3"
 GODOT_TAG="4.3-stable"
 TMP_DIR="$(mktemp -d)"
@@ -18,6 +23,6 @@ curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/
 unzip -q "$TMP_DIR/templates.tpz" -d "$TMP_DIR/templates"
 cp -R "$TMP_DIR/templates/templates/." "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
 
-"$GODOT_BIN" --headless --path . --editor --import
-"$GODOT_BIN" --headless --path . --export-release "Web" build/web/index.html
-test -s build/web/index.html
+"$GODOT_BIN" --headless --path "$PROJECT_DIR" --editor --import
+"$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-release "Web" "$PROJECT_DIR/build/web/index.html"
+test -s "$PROJECT_DIR/build/web/index.html"
