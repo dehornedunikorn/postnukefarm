@@ -249,7 +249,7 @@ func _populate_quaternius_forest() -> void:
         Vector3(27,0,15), Vector3(-23,0,17), Vector3(-30,0,-20), Vector3(25,0,-21)
     ]
     for i in range(placements.size()):
-        var key := ["tree_a", "tree_b", "tree_c"][i % 3]
+        var key: String = ["tree_a", "tree_b", "tree_c"][i % 3]
         _spawn_model(key, placements[i], [1.15, 1.35, 1.0, 1.25][i % 4], float(i) * 0.61)
     for i in range(24):
         var x := randf_range(-23, 24)
