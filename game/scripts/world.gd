@@ -35,6 +35,11 @@ func _ready() -> void:
     _build_ui()
     _load_quaternius_models()
 
+func _unhandled_input(event: InputEvent) -> void:
+    if player != null and player.is_physics_processing() and event is InputEventKey:
+        if event.pressed and not event.echo and event.keycode == KEY_E:
+            _interact_nearby()
+
 func _mat(color: Color, roughness := 1.0) -> StandardMaterial3D:
     var m := StandardMaterial3D.new()
     m.albedo_color = color
