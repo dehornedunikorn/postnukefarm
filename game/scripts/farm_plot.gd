@@ -2,6 +2,7 @@ extends StaticBody3D
 
 var state := 0 # 0 empty, 1 growing, 2 ready
 var growth := 0.0
+const GROWTH_SECONDS := 12.0
 var crop_visual: Node3D
 var label: Label3D
 
@@ -41,6 +42,16 @@ func _ready() -> void:
     label.modulate = Color("#fff0d3")
     add_child(label)
 
+func _process(delta: float) -> void:
+    if state != 1: return
+    growth += delta
+    if growth >= GROWTH_SECONDS:
+        state = 2
+        label.text = "READY TO PICK!"
+        _show_crop(1.0)
+        var world = get_meta("world")
+        world.update_hud()
+
 func _mat(color: Color) -> StandardMaterial3D:
     var mat := StandardMaterial3D.new()
     mat.albedo_color = color
@@ -65,13 +76,17 @@ func interact() -> void:
         world.seed_count -= 1
         state = 1
         growth = 0.0
-        label.text = "GROWING..."
-        _show_crop(0.55)
+        label.text = "GROWING... WATER TO HELP"
+        _show_crop(0.35)
     elif state == 1:
-        growth = 1.0
-        state = 2
-        label.text = "READY TO PICK!"
-        _show_crop(1.0)
+        growth += 4.0
+        if growth >= GROWTH_SECONDS:
+            state = 2
+            label.text = "READY TO PICK!"
+            _show_crop(1.0)
+        else:
+            label.text = "WATERED · %d%%" % int(growth / GROWTH_SECONDS * 100.0)
+            _show_crop(0.35 + growth / GROWTH_SECONDS * 0.65)
     else:
         world.harvest_count += 1
         world.seed_count += 1
