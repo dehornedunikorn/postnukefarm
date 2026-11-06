@@ -21,6 +21,8 @@ var plots: Array[Node3D] = []
 var model_scenes: Dictionary = {}
 var tree_keys: Array[String] = []
 var bush_keys: Array[String] = []
+var clover_keys: Array[String] = []
+var rock_keys: Array[String] = []
 var model_load_status := "Loading the valley's living art..."
 var load_count := 0
 var model_root: Node3D
@@ -235,19 +237,28 @@ func _load_quaternius_models() -> void:
             category = "tree"
         elif filename.contains("bush") or filename.contains("shrub"):
             category = "bush"
+        elif filename.contains("clover") or filename.contains("flower"):
+            category = "clover"
+        elif filename.contains("rock"):
+            category = "rock"
         if category == "": continue
         var packed := ResourceLoader.load(path) as PackedScene
         if packed == null: continue
-        var key: String = category + "_" + str(tree_keys.size() if category == "tree" else bush_keys.size())
+        var index := tree_keys.size() if category == "tree" else bush_keys.size() if category == "bush" else clover_keys.size() if category == "clover" else rock_keys.size()
+        var key: String = category + "_" + str(index)
         model_scenes[key] = packed
         if category == "tree":
             tree_keys.append(key)
-        else:
+        elif category == "bush":
             bush_keys.append(key)
+        elif category == "clover":
+            clover_keys.append(key)
+        elif category == "rock":
+            rock_keys.append(key)
 
     if tree_keys.size() > 0:
         _populate_quaternius_forest()
-        model_load_status = "Quaternius CC0 nature: %d tree types, %d bush types" % [tree_keys.size(), bush_keys.size()]
+        model_load_status = "Quaternius nature: %d trees · %d bushes · %d clovers · %d rocks" % [tree_keys.size(), bush_keys.size(), clover_keys.size(), rock_keys.size()]
         update_hud()
         return
 
@@ -307,17 +318,30 @@ func _populate_quaternius_forest() -> void:
         var key: String = tree_keys[i % tree_keys.size()]
         _spawn_model(key, placements[i], [1.15, 1.35, 1.0, 1.25][i % 4], float(i) * 0.61)
     if not bush_keys.is_empty():
-        for i in range(24):
+        for i in range(28):
             var x := randf_range(-23, 24)
             var z := randf_range(-24, 26)
             if abs(x) < 13 and abs(z) < 13: continue
             var bush_key: String = bush_keys[i % bush_keys.size()]
             _spawn_model(bush_key, Vector3(x, 0, z), randf_range(0.55, 0.9), randf_range(0.0, TAU))
+    if not clover_keys.is_empty():
+        for i in range(42):
+            var x := randf_range(-26, 26)
+            var z := randf_range(-26, 26)
+            if abs(x) < 9 and abs(z) < 9: continue
+            var clover_key: String = clover_keys[i % clover_keys.size()]
+            _spawn_model(clover_key, Vector3(x, 0, z), randf_range(0.45, 0.8), randf_range(0.0, TAU))
+    if not rock_keys.is_empty():
+        var rock_spots := [Vector3(-20,0,-8), Vector3(-14,0,-13), Vector3(-21,0,-14), Vector3(23,0,-15), Vector3(29,0,-8), Vector3(21,0,19), Vector3(-25,0,19), Vector3(14,0,29)]
+        for i in range(rock_spots.size()):
+            var rock_key: String = rock_keys[i % rock_keys.size()]
+            _spawn_model(rock_key, rock_spots[i], randf_range(0.7, 1.25), randf_range(0.0, TAU))
 func _build_player() -> void:
     player = CharacterBody3D.new()
     player.set_script(PLAYER_SCRIPT)
     player.position = Vector3(0, 0.9, 10)
     add_child(player)
+    player.set_physics_process(false)
 
 func _build_ui() -> void:
     var layer := CanvasLayer.new()
@@ -358,6 +382,50 @@ func _build_ui() -> void:
     action.add_theme_font_size_override("font_size", 19)
     action.pressed.connect(_interact_nearby)
     layer.add_child(action)
+
+    var menu := ColorRect.new()
+    menu.name = "TitleScreen"
+    menu.color = Color(0.035, 0.065, 0.045, 0.88)
+    menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    layer.add_child(menu)
+    var card := PanelContainer.new()
+    card.set_anchors_preset(Control.PRESET_CENTER)
+    card.position = Vector2(-220, -155)
+    card.custom_minimum_size = Vector2(440, 310)
+    menu.add_child(card)
+    var menu_stack := VBoxContainer.new()
+    menu_stack.alignment = BoxContainer.ALIGNMENT_CENTER
+    menu_stack.add_theme_constant_override("separation", 14)
+    card.add_child(menu_stack)
+    var game_title := Label.new()
+    game_title.text = "EVERDAWN"
+    game_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    game_title.add_theme_font_size_override("font_size", 44)
+    menu_stack.add_child(game_title)
+    var subtitle := Label.new()
+    subtitle.text = "THE GREEN VALE"
+    subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    subtitle.add_theme_font_size_override("font_size", 18)
+    menu_stack.add_child(subtitle)
+    var story := Label.new()
+    story.text = "A little farm. A living valley.\nYour story starts with one seed."
+    story.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    story.add_theme_font_size_override("font_size", 16)
+    menu_stack.add_child(story)
+    var start_button := Button.new()
+    start_button.text = "ENTER THE GREEN VALE"
+    start_button.custom_minimum_size = Vector2(0, 54)
+    start_button.add_theme_font_size_override("font_size", 18)
+    menu_stack.add_child(start_button)
+    start_button.pressed.connect(func() -> void:
+        menu.queue_free()
+        player.set_physics_process(true)
+    )
+    var controls := Label.new()
+    controls.text = "WASD / arrows / touch to move  •  E / TEND to farm"
+    controls.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    controls.add_theme_font_size_override("font_size", 12)
+    menu_stack.add_child(controls)
 
 func _touch_button(parent: Control, caption: String, pos: Vector2, action: String) -> void:
     var b := TouchScreenButton.new()
