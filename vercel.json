@@ -1,4 +1,8 @@
 {
+  "buildCommand": "bash game/scripts/build_web.sh",
+  "outputDirectory": "game/build/web",
+  "installCommand": "npm install --ignore-scripts",
+  "framework": null,
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
