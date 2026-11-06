@@ -3,18 +3,33 @@ extends Node3D
 const PLAYER_SCRIPT = preload("res://scripts/player.gd")
 const PLOT_SCRIPT = preload("res://scripts/farm_plot.gd")
 
+# Quaternius Stylized Nature MegaKit models (CC0). The GLB files are loaded
+# once from a public mirror; instances are then reused throughout the valley.
+const MODEL_URLS := {
+    "tree_a": "https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/tree1.glb",
+    "tree_b": "https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/tree2.glb",
+    "tree_c": "https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/tree3.glb",
+    "bush": "https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/bush.glb"
+}
+
 var player: CharacterBody3D
 var status_label: Label
 var seed_count := 8
 var harvest_count := 0
 var day := 1
 var plots: Array[Node3D] = []
+var model_scenes: Dictionary = {}
+var model_load_status := "Loading the valley's living art..."
+var load_count := 0
+var model_root: Node3D
 
 func _ready() -> void:
+    randomize()
     _build_environment()
     _build_farm()
     _build_player()
     _build_ui()
+    _load_quaternius_models()
 
 func _mat(color: Color, roughness := 1.0) -> StandardMaterial3D:
     var m := StandardMaterial3D.new()
@@ -22,31 +37,30 @@ func _mat(color: Color, roughness := 1.0) -> StandardMaterial3D:
     m.roughness = roughness
     return m
 
-func _box(parent: Node3D, size: Vector3, pos: Vector3, color: Color) -> MeshInstance3D:
+func _box(parent: Node3D, size: Vector3, pos: Vector3, color: Color, material: Material = null) -> MeshInstance3D:
     var mesh := BoxMesh.new()
     mesh.size = size
     var node := MeshInstance3D.new()
     node.mesh = mesh
     node.position = pos
-    node.material_override = _mat(color)
+    node.material_override = material if material else _mat(color)
     parent.add_child(node)
     return node
 
 func _build_environment() -> void:
     var ground := MeshInstance3D.new()
     var plane := PlaneMesh.new()
-    plane.size = Vector2(100, 100)
+    plane.size = Vector2(120, 120)
     ground.mesh = plane
-    ground.material_override = _mat(Color(0.25, 0.39, 0.24))
+    ground.material_override = _mat(Color("#6c9252"))
     ground.position.y = -0.12
     add_child(ground)
 
-    # A real collision floor prevents the player falling through the visual terrain.
     var ground_body := StaticBody3D.new()
     ground_body.position.y = -0.55
     var ground_collision := CollisionShape3D.new()
     var ground_shape := BoxShape3D.new()
-    ground_shape.size = Vector3(100, 1, 100)
+    ground_shape.size = Vector3(120, 1, 120)
     ground_collision.shape = ground_shape
     ground_body.add_child(ground_collision)
     add_child(ground_body)
@@ -55,127 +69,198 @@ func _build_environment() -> void:
     var e := Environment.new()
     e.background_mode = Environment.BG_SKY
     e.sky = Sky.new()
-    e.sky.sky_material = ProceduralSkyMaterial.new()
+    var sky_mat := ProceduralSkyMaterial.new()
+    sky_mat.sky_top_color = Color("#4b7890")
+    sky_mat.sky_horizon_color = Color("#c8d9c4")
+    sky_mat.ground_bottom_color = Color("#536c49")
+    sky_mat.ground_horizon_color = Color("#a5b98c")
+    e.sky.sky_material = sky_mat
     e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-    e.ambient_light_color = Color(0.72, 0.79, 0.88)
-    e.ambient_light_energy = 0.75
+    e.ambient_light_color = Color("#d8e4cb")
+    e.ambient_light_energy = 0.8
+    e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+    e.fog_enabled = true
+    e.fog_light_color = Color("#c1d0ad")
+    e.fog_density = 0.006
     env.environment = e
     add_child(env)
 
     var sun := DirectionalLight3D.new()
-    sun.rotation_degrees = Vector3(-48, -28, 0)
-    sun.light_energy = 1.25
+    sun.rotation_degrees = Vector3(-42, -32, 0)
+    sun.light_energy = 1.35
     sun.shadow_enabled = true
+    sun.directional_shadow_max_distance = 65
     add_child(sun)
 
-    # Winding dirt paths and a small pond give the farm a readable layout.
-    _box(self, Vector3(2.8, 0.08, 28), Vector3(0, -0.04, 1), Color(0.47, 0.34, 0.22))
-    _box(self, Vector3(17, 0.07, 2.2), Vector3(-4, -0.035, 3), Color(0.47, 0.34, 0.22))
-    var pond := MeshInstance3D.new()
-    var cylinder := CylinderMesh.new()
-    cylinder.top_radius = 3.2
-    cylinder.bottom_radius = 3.2
-    cylinder.height = 0.08
-    pond.mesh = cylinder
-    pond.position = Vector3(-13, -0.04, -8)
-    pond.material_override = _mat(Color(0.15, 0.43, 0.55), 0.25)
-    add_child(pond)
-
-    # Temporary stylized tree silhouettes; replaceable by Quaternius GLB assets.
-    for i in range(44):
-        var x := randf_range(-34, 34)
-        var z := randf_range(-34, 34)
-        if abs(x) < 10 and abs(z) < 13: continue
-        if Vector2(x + 13, z + 8).length() < 5: continue
-        _make_tree(Vector3(x, 0, z), randf_range(0.8, 1.35))
-
-    # Distant hills.
-    for i in range(12):
+    # Soft rolling hills frame the playable farm.
+    for i in range(16):
         var hill := MeshInstance3D.new()
         var sphere := SphereMesh.new()
-        sphere.radius = randf_range(5.0, 9.0)
-        sphere.height = sphere.radius * 1.2
+        sphere.radius = randf_range(6.0, 11.0)
+        sphere.height = sphere.radius * 1.1
         hill.mesh = sphere
-        hill.position = Vector3(-42 + i * 8, -1.5, -43 - randf_range(0, 8))
-        hill.material_override = _mat(Color(0.28, 0.42, 0.29))
+        hill.position = Vector3(-62 + i * 8, -2.5, -52 - randf_range(0, 14))
+        hill.material_override = _mat([Color("#587e4b"), Color("#668b50"), Color("#78955b")][i % 3])
         add_child(hill)
 
-func _make_tree(pos: Vector3, scale_factor: float) -> void:
-    var trunk := MeshInstance3D.new()
-    var t := CylinderMesh.new()
-    t.top_radius = 0.22 * scale_factor
-    t.bottom_radius = 0.34 * scale_factor
-    t.height = 2.4 * scale_factor
-    trunk.mesh = t
-    trunk.position = pos + Vector3(0, 1.2 * scale_factor, 0)
-    trunk.material_override = _mat(Color(0.32, 0.20, 0.12))
-    add_child(trunk)
-    var crown := MeshInstance3D.new()
-    var s := SphereMesh.new()
-    s.radius = 1.35 * scale_factor
-    s.height = 2.4 * scale_factor
-    crown.mesh = s
-    crown.position = pos + Vector3(0, 2.7 * scale_factor, 0)
-    crown.material_override = _mat([Color(0.22,0.40,0.22), Color(0.29,0.47,0.25), Color(0.34,0.48,0.28)][randi_range(0,2)])
-    add_child(crown)
+    # Curved-looking farm lanes built from overlapping, softly rounded segments.
+    var path_mat := _mat(Color("#b69a6d"))
+    for i in range(9):
+        var seg := _box(self, Vector3(3.3, 0.035, 4.4), Vector3(0, -0.035, 12 - i * 3.4), Color.WHITE, path_mat)
+        seg.rotation_degrees.y = sin(float(i) * 0.55) * 8
+    for i in range(6):
+        var seg := _box(self, Vector3(4.2, 0.035, 3.2), Vector3(-1.8 - i * 2.5, -0.03, 1.0), Color.WHITE, path_mat)
+        seg.rotation_degrees.y = -18
+
+    # Pond with a grassy shoreline.
+    var bank := MeshInstance3D.new()
+    var bank_mesh := CylinderMesh.new()
+    bank_mesh.top_radius = 4.7
+    bank_mesh.bottom_radius = 4.7
+    bank_mesh.height = 0.12
+    bank.mesh = bank_mesh
+    bank.position = Vector3(-17, -0.06, -9)
+    bank.material_override = _mat(Color("#a3a76b"))
+    add_child(bank)
+    var pond := MeshInstance3D.new()
+    var water := CylinderMesh.new()
+    water.top_radius = 3.9
+    water.bottom_radius = 3.9
+    water.height = 0.08
+    pond.mesh = water
+    pond.position = Vector3(-17, 0.0, -9)
+    pond.material_override = _mat(Color("#4c9ca6"), 0.18)
+    add_child(pond)
+
+    model_root = Node3D.new()
+    model_root.name = "QuaterniusNature"
+    add_child(model_root)
 
 func _build_farm() -> void:
-    # Cottage
-    _box(self, Vector3(6, 3.5, 5), Vector3(8, 1.75, -5), Color(0.73, 0.61, 0.43))
-    var roof := MeshInstance3D.new()
-    var roof_mesh := PrismMesh.new()
-    roof_mesh.size = Vector3(7, 2.5, 6)
-    roof.mesh = roof_mesh
-    roof.position = Vector3(8, 4.5, -5)
-    roof.rotation_degrees.z = 0
-    roof.material_override = _mat(Color(0.34, 0.19, 0.16))
-    add_child(roof)
-    _box(self, Vector3(1.1, 2.2, 0.12), Vector3(8, 1.1, -2.43), Color(0.25, 0.15, 0.10))
+    # Warm timber-and-plaster farmhouse, with layered roof and visible trim.
+    var house := Node3D.new()
+    house.name = "Farmhouse"
+    house.position = Vector3(9, 0, -7)
+    add_child(house)
+    _box(house, Vector3(7.2, 3.6, 5.6), Vector3(0, 1.8, 0), Color("#e8d5ad"))
+    _box(house, Vector3(7.5, 0.22, 5.9), Vector3(0, 0.18, 0), Color("#72533a"))
+    var roof_mat := _mat(Color("#9a5540"))
+    var roof_a := _box(house, Vector3(4.2, 0.25, 6.4), Vector3(-1.35, 4.0, 0), Color.WHITE, roof_mat)
+    roof_a.rotation_degrees.z = 29
+    var roof_b := _box(house, Vector3(4.2, 0.25, 6.4), Vector3(1.35, 4.0, 0), Color.WHITE, roof_mat)
+    roof_b.rotation_degrees.z = -29
+    _box(house, Vector3(1.2, 2.4, 0.16), Vector3(0, 1.2, 2.88), Color("#68452f"))
+    _box(house, Vector3(1.6, 1.25, 0.12), Vector3(-2.1, 2.45, 2.88), Color("#82a8a0"))
+    _box(house, Vector3(1.6, 1.25, 0.12), Vector3(2.1, 2.45, 2.88), Color("#82a8a0"))
+    _box(house, Vector3(0.14, 1.4, 0.14), Vector3(-2.1, 2.45, 2.96), Color("#f1e4c8"))
+    _box(house, Vector3(0.14, 1.4, 0.14), Vector3(2.1, 2.45, 2.96), Color("#f1e4c8"))
 
-    # Six tilled plots with individual interaction scripts.
+    # Six generous beds with enough room to walk between them.
     for row in range(2):
         for col in range(3):
             var plot := StaticBody3D.new()
             plot.set_script(PLOT_SCRIPT)
-            plot.position = Vector3(-5 + col * 2.4, 0, -2 + row * 2.4)
+            plot.position = Vector3(-5.3 + col * 2.65, 0, -2.4 + row * 2.65)
             plot.set_meta("world", self)
             add_child(plot)
             plots.append(plot)
 
-    # Well and lanterns.
-    var well := MeshInstance3D.new()
-    var well_mesh := CylinderMesh.new()
-    well_mesh.top_radius = 0.85
-    well_mesh.bottom_radius = 0.95
-    well_mesh.height = 0.8
-    well.mesh = well_mesh
-    well.position = Vector3(3.5, 0.4, -1)
-    well.material_override = _mat(Color(0.48, 0.48, 0.43))
-    add_child(well)
+    _make_well(Vector3(4.4, 0, -1.2))
+    _make_lantern(Vector3(-9, 0, 5))
+    _make_lantern(Vector3(12, 0, 4))
+    _make_fence()
 
-    for p in [Vector3(-8,0,5), Vector3(10,0,5), Vector3(14,0,-10)]:
-        _make_lantern(p)
+func _make_well(p: Vector3) -> void:
+    var well := MeshInstance3D.new()
+    var mesh := CylinderMesh.new()
+    mesh.top_radius = 0.8
+    mesh.bottom_radius = 0.95
+    mesh.height = 0.9
+    well.mesh = mesh
+    well.position = p + Vector3(0, 0.45, 0)
+    well.material_override = _mat(Color("#b9aa88"))
+    add_child(well)
+    _box(self, Vector3(2.1, 0.15, 0.18), p + Vector3(0, 1.55, 0), Color("#65442e"))
+    _box(self, Vector3(0.15, 1.4, 0.15), p + Vector3(-0.8, 1.1, 0), Color("#65442e"))
+    _box(self, Vector3(0.15, 1.4, 0.15), p + Vector3(0.8, 1.1, 0), Color("#65442e"))
+
+func _make_fence() -> void:
+    var wood := _mat(Color("#87603d"))
+    for x in range(-13, 16, 2):
+        _box(self, Vector3(0.14, 0.85, 0.14), Vector3(float(x), 0.42, 7.5), Color.WHITE, wood)
+    _box(self, Vector3(28, 0.12, 0.12), Vector3(1, 0.65, 7.5), Color.WHITE, wood)
+    _box(self, Vector3(28, 0.12, 0.12), Vector3(1, 0.32, 7.5), Color.WHITE, wood)
 
 func _make_lantern(p: Vector3) -> void:
-    _box(self, Vector3(0.12, 2.1, 0.12), p + Vector3(0,1,0), Color(0.25,0.18,0.12))
+    _box(self, Vector3(0.13, 2.0, 0.13), p + Vector3(0, 1, 0), Color("#62442f"))
     var glow := MeshInstance3D.new()
     var s := SphereMesh.new()
-    s.radius = 0.24
+    s.radius = 0.23
     glow.mesh = s
-    glow.position = p + Vector3(0,2.2,0)
-    glow.material_override = _mat(Color(1.0,0.67,0.25),0.3)
+    glow.position = p + Vector3(0, 2.1, 0)
+    glow.material_override = _mat(Color("#ffd17a"), 0.25)
     add_child(glow)
     var light := OmniLight3D.new()
     light.position = glow.position
-    light.light_color = Color(1.0,0.62,0.25)
-    light.light_energy = 0.7
-    light.omni_range = 6
+    light.light_color = Color("#ffc66f")
+    light.light_energy = 0.55
+    light.omni_range = 7
     add_child(light)
+
+func _load_quaternius_models() -> void:
+    for key in MODEL_URLS.keys():
+        var req := HTTPRequest.new()
+        req.timeout = 30.0
+        add_child(req)
+        req.request_completed.connect(_on_model_downloaded.bind(key, req))
+        var err := req.request(MODEL_URLS[key])
+        if err != OK:
+            model_load_status = "Could not start nature model download."
+            req.queue_free()
+
+func _on_model_downloaded(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, key: String, req: HTTPRequest) -> void:
+    req.queue_free()
+    load_count += 1
+    if result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
+        var doc := GLTFDocument.new()
+        var state := GLTFState.new()
+        var err := doc.append_from_buffer(body, "", state)
+        if err == OK:
+            model_scenes[key] = doc.generate_scene(state)
+    if load_count >= MODEL_URLS.size():
+        _populate_quaternius_forest()
+        model_load_status = "Quaternius nature loaded" if model_scenes.size() > 0 else "Nature models unavailable — reconnect to load"
+        update_hud()
+
+func _spawn_model(key: String, pos: Vector3, scale_factor: float, yaw: float = 0.0) -> void:
+    if not model_scenes.has(key): return
+    var instance: Node3D = model_scenes[key].instantiate()
+    instance.position = pos
+    instance.scale = Vector3.ONE * scale_factor
+    instance.rotation.y = yaw
+    model_root.add_child(instance)
+
+func _populate_quaternius_forest() -> void:
+    var placements := [
+        Vector3(-34,0,-28), Vector3(-27,0,-35), Vector3(-19,0,-31), Vector3(-8,0,-35),
+        Vector3(2,0,-34), Vector3(18,0,-34), Vector3(29,0,-29), Vector3(36,0,-18),
+        Vector3(-36,0,-8), Vector3(-33,0,12), Vector3(-29,0,27), Vector3(-18,0,32),
+        Vector3(2,0,34), Vector3(19,0,31), Vector3(32,0,24), Vector3(37,0,8),
+        Vector3(27,0,15), Vector3(-23,0,17), Vector3(-30,0,-20), Vector3(25,0,-21)
+    ]
+    for i in range(placements.size()):
+        var key := ["tree_a", "tree_b", "tree_c"][i % 3]
+        _spawn_model(key, placements[i], [1.15, 1.35, 1.0, 1.25][i % 4], float(i) * 0.61)
+    for i in range(24):
+        var x := randf_range(-23, 24)
+        var z := randf_range(-24, 26)
+        if abs(x) < 13 and abs(z) < 13: continue
+        _spawn_model("bush", Vector3(x, 0, z), randf_range(0.55, 0.9), randf_range(0.0, TAU))
 
 func _build_player() -> void:
     player = CharacterBody3D.new()
     player.set_script(PLAYER_SCRIPT)
-    player.position = Vector3(0, 0.9, 8)
+    player.position = Vector3(0, 0.9, 10)
     add_child(player)
 
 func _build_ui() -> void:
@@ -183,24 +268,23 @@ func _build_ui() -> void:
     add_child(layer)
     var panel := PanelContainer.new()
     panel.position = Vector2(18, 16)
-    panel.custom_minimum_size = Vector2(290, 94)
+    panel.custom_minimum_size = Vector2(320, 108)
     layer.add_child(panel)
     var v := VBoxContainer.new()
     panel.add_child(v)
     var title := Label.new()
-    title.text = "EVERDAWN  •  DAY 1"
+    title.text = "EVERDAWN  /  THE GREEN VALE"
     title.add_theme_font_size_override("font_size", 20)
     v.add_child(title)
     status_label = Label.new()
-    status_label.text = "Seeds: 8   •   Harvest: 0\nWASD / arrows to move  •  E to tend plots"
+    status_label.text = "DAY 01   •   SEEDS 08   •   HARVEST 00\nWASD / arrows / touch • E to tend the beds"
     v.add_child(status_label)
 
     var hint := Label.new()
-    hint.text = "A quiet valley at the edge of the old forest"
-    hint.position = Vector2(18, 122)
+    hint.text = "A quiet valley, where every seed has a story."
+    hint.position = Vector2(20, 132)
     layer.add_child(hint)
 
-    # Mobile touch controls: virtual directional pad and action button.
     var pad := Control.new()
     pad.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
     pad.position = Vector2(24, -190)
@@ -211,11 +295,11 @@ func _build_ui() -> void:
     _touch_button(pad, "◀", Vector2(0,52), "move_left")
     _touch_button(pad, "▶", Vector2(128,52), "move_right")
     var action := Button.new()
-    action.text = "USE"
-    action.position = Vector2(-112, -92)
+    action.text = "TEND"
+    action.position = Vector2(-116, -96)
     action.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-    action.custom_minimum_size = Vector2(88, 68)
-    action.add_theme_font_size_override("font_size", 20)
+    action.custom_minimum_size = Vector2(96, 72)
+    action.add_theme_font_size_override("font_size", 19)
     action.pressed.connect(_interact_nearby)
     layer.add_child(action)
 
@@ -225,7 +309,7 @@ func _touch_button(parent: Control, caption: String, pos: Vector2, action: Strin
     b.action = action
     b.visibility_mode = TouchScreenButton.VISIBILITY_ALWAYS
     var shape := CircleShape2D.new()
-    shape.radius = 30
+    shape.radius = 31
     b.shape = shape
     parent.add_child(b)
     var label := Label.new()
@@ -237,7 +321,7 @@ func _touch_button(parent: Control, caption: String, pos: Vector2, action: Strin
 func _interact_nearby() -> void:
     if player == null: return
     var nearest: Node3D
-    var best := 3.2
+    var best := 3.4
     for p in plots:
         var d := player.global_position.distance_to(p.global_position)
         if d < best:
@@ -250,8 +334,4 @@ func _interact_nearby() -> void:
 
 func update_hud() -> void:
     if status_label:
-        status_label.text = "Seeds: %d   •   Harvest: %d\nMove: WASD / arrows / touch  •  Use: E" % [seed_count, harvest_count]
-
-func _unhandled_input(event: InputEvent) -> void:
-    if event.is_action_pressed("interact"):
-        _interact_nearby()
+        status_label.text = "DAY %02d   •   SEEDS %02d   •   HARVEST %02d\n%s" % [day, seed_count, harvest_count, model_load_status]
