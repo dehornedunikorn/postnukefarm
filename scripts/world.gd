@@ -41,6 +41,16 @@ func _build_environment() -> void:
     ground.position.y = -0.12
     add_child(ground)
 
+    # A real collision floor prevents the player falling through the visual terrain.
+    var ground_body := StaticBody3D.new()
+    ground_body.position.y = -0.55
+    var ground_collision := CollisionShape3D.new()
+    var ground_shape := BoxShape3D.new()
+    ground_shape.size = Vector3(100, 1, 100)
+    ground_collision.shape = ground_shape
+    ground_body.add_child(ground_collision)
+    add_child(ground_body)
+
     var env := WorldEnvironment.new()
     var e := Environment.new()
     e.background_mode = Environment.BG_SKY
