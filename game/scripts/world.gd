@@ -19,6 +19,8 @@ var harvest_count := 0
 var day := 1
 var plots: Array[Node3D] = []
 var model_scenes: Dictionary = {}
+var tree_keys: Array[String] = []
+var bush_keys: Array[String] = []
 var model_load_status := "Loading the valley's living art..."
 var load_count := 0
 var model_root: Node3D
@@ -207,7 +209,49 @@ func _make_lantern(p: Vector3) -> void:
     light.omni_range = 7
     add_child(light)
 
+func _collect_model_paths(folder: String, output: Array[String]) -> void:
+    var dir := DirAccess.open(folder)
+    if dir == null: return
+    dir.list_dir_begin()
+    var entry := dir.get_next()
+    while entry != "":
+        if dir.current_is_dir():
+            if not entry.begins_with("."):
+                _collect_model_paths(folder.path_join(entry), output)
+        elif entry.to_lower().ends_with(".gltf") or entry.to_lower().ends_with(".glb"):
+            output.append(folder.path_join(entry))
+        entry = dir.get_next()
+    dir.list_dir_end()
+
 func _load_quaternius_models() -> void:
+    # Prefer the actual CC0 Standard archive extracted during CI.
+    var paths: Array[String] = []
+    _collect_model_paths("res://assets/quaternius", paths)
+    paths.sort()
+    for path in paths:
+        var filename := path.get_file().get_basename().to_lower()
+        var category := ""
+        if filename.contains("tree") or filename.contains("pine") or filename.contains("birch"):
+            category = "tree"
+        elif filename.contains("bush") or filename.contains("shrub"):
+            category = "bush"
+        if category == "": continue
+        var packed := ResourceLoader.load(path) as PackedScene
+        if packed == null: continue
+        var key: String = category + "_" + str(tree_keys.size() if category == "tree" else bush_keys.size())
+        model_scenes[key] = packed
+        if category == "tree":
+            tree_keys.append(key)
+        else:
+            bush_keys.append(key)
+
+    if tree_keys.size() > 0:
+        _populate_quaternius_forest()
+        model_load_status = "Quaternius CC0 nature: %d tree types, %d bush types" % [tree_keys.size(), bush_keys.size()]
+        update_hud()
+        return
+
+    # Development fallback when the Standard archive has not been imported locally.
     for key in MODEL_URLS.keys():
         var req := HTTPRequest.new()
         req.timeout = 30.0
@@ -227,20 +271,31 @@ func _on_model_downloaded(result: int, response_code: int, _headers: PackedStrin
         var err := doc.append_from_buffer(body, "", state)
         if err == OK:
             model_scenes[key] = doc.generate_scene(state)
+            if key.begins_with("tree"):
+                tree_keys.append(key)
+            elif key == "bush":
+                bush_keys.append(key)
     if load_count >= MODEL_URLS.size():
         _populate_quaternius_forest()
-        model_load_status = "Quaternius nature loaded" if model_scenes.size() > 0 else "Nature models unavailable — reconnect to load"
+        model_load_status = "Quaternius nature loaded" if tree_keys.size() > 0 else "Nature models unavailable — reconnect to load"
         update_hud()
 
 func _spawn_model(key: String, pos: Vector3, scale_factor: float, yaw: float = 0.0) -> void:
     if not model_scenes.has(key): return
-    var instance: Node3D = model_scenes[key].instantiate()
+    var source = model_scenes[key]
+    var instance: Node3D
+    if source is PackedScene:
+        instance = source.instantiate() as Node3D
+    elif source is Node3D:
+        instance = source.duplicate() as Node3D
+    if instance == null: return
     instance.position = pos
     instance.scale = Vector3.ONE * scale_factor
     instance.rotation.y = yaw
     model_root.add_child(instance)
 
 func _populate_quaternius_forest() -> void:
+    if tree_keys.is_empty(): return
     var placements := [
         Vector3(-34,0,-28), Vector3(-27,0,-35), Vector3(-19,0,-31), Vector3(-8,0,-35),
         Vector3(2,0,-34), Vector3(18,0,-34), Vector3(29,0,-29), Vector3(36,0,-18),
@@ -249,14 +304,15 @@ func _populate_quaternius_forest() -> void:
         Vector3(27,0,15), Vector3(-23,0,17), Vector3(-30,0,-20), Vector3(25,0,-21)
     ]
     for i in range(placements.size()):
-        var key: String = ["tree_a", "tree_b", "tree_c"][i % 3]
+        var key: String = tree_keys[i % tree_keys.size()]
         _spawn_model(key, placements[i], [1.15, 1.35, 1.0, 1.25][i % 4], float(i) * 0.61)
-    for i in range(24):
-        var x := randf_range(-23, 24)
-        var z := randf_range(-24, 26)
-        if abs(x) < 13 and abs(z) < 13: continue
-        _spawn_model("bush", Vector3(x, 0, z), randf_range(0.55, 0.9), randf_range(0.0, TAU))
-
+    if not bush_keys.is_empty():
+        for i in range(24):
+            var x := randf_range(-23, 24)
+            var z := randf_range(-24, 26)
+            if abs(x) < 13 and abs(z) < 13: continue
+            var bush_key: String = bush_keys[i % bush_keys.size()]
+            _spawn_model(bush_key, Vector3(x, 0, z), randf_range(0.55, 0.9), randf_range(0.0, TAU))
 func _build_player() -> void:
     player = CharacterBody3D.new()
     player.set_script(PLAYER_SCRIPT)
