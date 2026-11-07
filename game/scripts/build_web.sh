@@ -19,6 +19,10 @@ mkdir -p build/web assets/quaternius
 curl -fsSL "https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip" -o "$TMP_DIR/quaternius.zip"
 python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius.zip" --destination assets/quaternius
 
+# Quaternius LowPoly Crops Pack (CC0): 100+ crop models and growth stages.
+curl -fsSL "https://opengameart.org/sites/default/files/nature_crops_pack_by_quaternius.zip" -o "$TMP_DIR/quaternius-crops.zip"
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-crops.zip" --destination assets/quaternius --subdir crops --include-legacy-formats
+
 curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o "$TMP_DIR/godot.zip"
 unzip -q "$TMP_DIR/godot.zip" -d "$TMP_DIR/godot"
 GODOT_BIN="$(find "$TMP_DIR/godot" -maxdepth 1 -type f -name 'Godot*' | head -n 1)"
