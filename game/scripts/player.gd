@@ -4,17 +4,26 @@ extends CharacterBody3D
 var gravity := 22.0
 
 func _ready() -> void:
-    # A compact, hand-built storybook farmer. Environment foliage is imported
-    # from Quaternius; this character is original geometry, not a stock placeholder.
-    _part(CapsuleMesh.new(), Vector3(0, 1.0, 0), Vector3(0.72, 1.0, 0.42), Color("#6b8060"))
-    _part(SphereMesh.new(), Vector3(0, 1.92, 0), Vector3(0.48, 0.48, 0.46), Color("#e8bd91"))
-    _part(CylinderMesh.new(), Vector3(0, 2.18, 0), Vector3(0.72, 0.12, 0.72), Color("#a66e3e"))
-    _part(CylinderMesh.new(), Vector3(0, 2.28, 0), Vector3(0.42, 0.24, 0.42), Color("#b77c43"))
-    _part(BoxMesh.new(), Vector3(-0.43, 1.0, -0.03), Vector3(0.42, 0.72, 0.35), Color("#8b5438"))
-    _part(CapsuleMesh.new(), Vector3(-0.25, 0.42, 0), Vector3(0.26, 0.68, 0.28), Color("#584637"))
-    _part(CapsuleMesh.new(), Vector3(0.25, 0.42, 0), Vector3(0.26, 0.68, 0.28), Color("#584637"))
-    _part(CapsuleMesh.new(), Vector3(-0.49, 1.12, 0), Vector3(0.22, 0.68, 0.22), Color("#e8bd91"))
-    _part(CapsuleMesh.new(), Vector3(0.49, 1.12, 0), Vector3(0.22, 0.68, 0.22), Color("#e8bd91"))
+    var world := get_parent()
+    var avatar_scene: PackedScene = world.get_character_scene() if world != null and world.has_method("get_character_scene") else null
+    if avatar_scene != null:
+        var avatar := avatar_scene.instantiate() as Node3D
+        if avatar != null:
+            avatar.name = "QuaterniusFarmer"
+            avatar.scale = Vector3.ONE * 0.9
+            avatar.position.y = 0.0
+            add_child(avatar)
+    else:
+        # Development fallback while the Quaternius character archive is unavailable.
+        _part(CapsuleMesh.new(), Vector3(0, 1.0, 0), Vector3(0.72, 1.0, 0.42), Color("#6b8060"))
+        _part(SphereMesh.new(), Vector3(0, 1.92, 0), Vector3(0.48, 0.48, 0.46), Color("#e8bd91"))
+        _part(CylinderMesh.new(), Vector3(0, 2.18, 0), Vector3(0.72, 0.12, 0.72), Color("#a66e3e"))
+        _part(CylinderMesh.new(), Vector3(0, 2.28, 0), Vector3(0.42, 0.24, 0.42), Color("#b77c43"))
+        _part(BoxMesh.new(), Vector3(-0.43, 1.0, -0.03), Vector3(0.42, 0.72, 0.35), Color("#8b5438"))
+        _part(CapsuleMesh.new(), Vector3(-0.25, 0.42, 0), Vector3(0.26, 0.68, 0.28), Color("#584637"))
+        _part(CapsuleMesh.new(), Vector3(0.25, 0.42, 0), Vector3(0.26, 0.68, 0.28), Color("#584637"))
+        _part(CapsuleMesh.new(), Vector3(-0.49, 1.12, 0), Vector3(0.22, 0.68, 0.22), Color("#e8bd91"))
+        _part(CapsuleMesh.new(), Vector3(0.49, 1.12, 0), Vector3(0.22, 0.68, 0.22), Color("#e8bd91"))
 
     var collision := CollisionShape3D.new()
     var shape := CapsuleShape3D.new()
