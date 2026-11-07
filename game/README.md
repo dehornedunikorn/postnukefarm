@@ -3,35 +3,39 @@
 A cozy third-person 3D fantasy farming game built in Godot 4, targeting desktop and mobile browsers.
 
 ## World design
-- Storybook green valley with a farmhouse area, pond, winding paths, timber boundaries, a well and warm lantern lighting.
-- Quaternius Stylized Nature MegaKit CC0 models populate the forest edge with trees, bushes, ground flora and rocks.
-- Quaternius LowPoly Crops Pack CC0 models replace the procedural crop placeholders and supply distinct growth-stage visuals.
-- Quaternius LowPoly Medieval Buildings CC0 pack supplies the farmhouse model.
-- Quaternius RPG Characters supply the player avatar; Quaternius farm animals populate the valley.
+- Storybook green valley with a Quaternius farmhouse, barn, chicken coop, windmill, water tower, silo, well and fenced grazing paddock.
+- Quaternius Stylized Nature MegaKit models populate the forest edge with trees, bushes, ground flora, rocks and stepping-stone paths.
+- Quaternius LowPoly Crops models replace the procedural crop visuals and supply distinct growth stages.
+- Quaternius RPG character model supplies the player avatar; Quaternius farm animals populate and wander around the paddock.
 - Six garden beds support planting, timed growth, watering and harvesting.
-- Keyboard and touch movement, plus an on-screen touch action button.
+- Keyboard and touch movement, a working title-screen button and visible on-screen mobile controls.
+- Pond, farmhouse, tree, rock, fence and world-boundary collision keep the player in the playable area.
 
 ## Quaternius asset packs
-The Vercel build downloads and imports three free CC0 packs:
-1. **Stylized Nature MegaKit — Standard:** 68 models in glTF/GLB format, with referenced buffers and textures.
-2. **LowPoly Crops Pack:** FBX/OBJ crop models, including multiple plant types and growth stages.
-3. **LowPoly Medieval Buildings:** modular medieval building models in FBX/OBJ format.
-4. **LowPoly RPG Characters:** six rigged, animated and textured fantasy character models.
-5. **LowPoly Animated Farm Animal Pack:** farm livestock models (cow, sheep, pig, horse, llama and dog).
+The Vercel build downloads and imports six free CC0 packs:
+1. **Stylized Nature MegaKit — Standard:** 68 glTF/GLB models with referenced buffers and textures.
+2. **LowPoly Crops Pack:** crop models with multiple plant families and growth stages.
+3. **LowPoly Medieval Buildings:** modular medieval building models.
+4. **Farm Buildings Pack:** 13 farm structures and props, including barns, silo house, well, windmill, water tower, chicken coop and fences.
+5. **LowPoly RPG Characters:** fantasy character models; OBJ versions are used for reliable browser import.
+6. **LowPoly Animated Farm Animal Pack:** livestock models (cow, sheep, pig, horse, llama and dog); OBJ versions are used for reliable browser import.
 
-The extractor preserves relative file paths and material textures. Godot imports the models locally during CI; the running game does not fetch models from third-party hosts. The build also deduplicates identical FBX/OBJ variants before instancing assets.
+The build downloads the public Farm Buildings folder with gdown and the other packs from their CC0 public archives. The extractor preserves model dependencies, MTL files and textures, and deduplicates FBX/OBJ variants. Godot imports assets locally during CI; the running game does not fetch models from third-party hosts. If the public Farm Buildings folder is temporarily unavailable, the modular medieval kit remains as the building fallback.
 
 ## Licensing
-The source pack pages identify these Quaternius assets as CC0. See:
+The source pages identify these Quaternius packs as CC0. See:
 - https://quaternius.com/packs/stylizednaturemegakit.html
 - https://opengameart.org/content/lowpoly-crops-pack
 - https://opengameart.org/content/lowpoly-medieval-buildings
+- https://quaternius.com/packs/farmbuildings.html
+- https://opengameart.org/content/lowpoly-rpg-characters
+- https://opengameart.org/content/lowpoly-animated-farm-animal-pack
 
 ## Run locally
 Open `game/` in Godot 4.3+ and press F6/F5. Main scene: `scenes/main.tscn`.
 
 ## Browser build
-Vercel builds the Godot Web export using `scripts/build_web.sh`. The build downloads the three CC0 archives, imports them, runs a headless main-scene smoke test, then exports the browser game to `build/web`.
+Vercel builds the Godot Web export using `scripts/build_web.sh`. It downloads the six CC0 packs, imports them, runs a headless main-scene smoke test, then exports the browser game to `build/web`.
 
 ## Controls
 - Desktop: WASD / arrow keys; E to plant, water and harvest.
