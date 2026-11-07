@@ -843,4 +843,4 @@ func _interact_nearby() -> void:
 
 func update_hud() -> void:
     if status_label:
-        status_label.text = "DAY %02d   •   SEEDS %02d   •   HARVEST %02d\n%s" % [day, seed_count, harvest_count, model_load_status]
+        status_label.text = "DAY %02d   •   SEEDS %02d   •   HARVEST %02d\nPLANT  •  WATER  •  HARVEST" % [day, seed_count, harvest_count]
