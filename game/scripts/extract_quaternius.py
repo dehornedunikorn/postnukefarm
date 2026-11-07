@@ -14,6 +14,7 @@ parser.add_argument("--destination", required=True)
 parser.add_argument("--subdir", default="")
 parser.add_argument("--include-legacy-formats", action="store_true")
 parser.add_argument("--prefer-obj", action="store_true")
+parser.add_argument("--list-models", action="store_true")
 args = parser.parse_args()
 
 archive = Path(args.archive)
@@ -79,3 +80,6 @@ with zipfile.ZipFile(archive) as zf:
             shutil.copyfileobj(source, output)
 
 print(f"Imported {len(models)} Quaternius models and {len(required) - len(models)} dependencies from {archive.name}.")
+if args.list_models:
+    for member in sorted(models):
+        print("QUATERNIUS_MODEL:" + Path(member).stem)
