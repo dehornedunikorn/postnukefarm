@@ -610,19 +610,28 @@ func _build_ui() -> void:
     menu_stack.add_child(controls)
 
 func _touch_button(parent: Control, caption: String, pos: Vector2, action: String) -> void:
-    var b := TouchScreenButton.new()
-    b.position = pos
-    b.action = action
-    b.visibility_mode = TouchScreenButton.VISIBILITY_ALWAYS
-    var shape := CircleShape2D.new()
-    shape.radius = 31
-    b.shape = shape
-    parent.add_child(b)
-    var label := Label.new()
-    label.text = caption
-    label.position = pos + Vector2(20, 12)
-    label.add_theme_font_size_override("font_size", 22)
-    parent.add_child(label)
+    var button := Button.new()
+    button.text = caption
+    button.position = pos
+    button.size = Vector2(58, 58)
+    button.focus_mode = Control.FOCUS_NONE
+    button.add_theme_font_size_override("font_size", 23)
+    button.add_theme_color_override("font_color", Color("#fff0d2"))
+    var normal := StyleBoxFlat.new()
+    normal.bg_color = Color("#203b2d", 0.76)
+    normal.border_color = Color("#d0ad72", 0.9)
+    normal.set_border_width_all(2)
+    normal.set_corner_radius_all(18)
+    button.add_theme_stylebox_override("normal", normal)
+    var hover := normal.duplicate() as StyleBoxFlat
+    hover.bg_color = Color("#416b48", 0.92)
+    button.add_theme_stylebox_override("hover", hover)
+    var pressed := normal.duplicate() as StyleBoxFlat
+    pressed.bg_color = Color("#71915b", 0.98)
+    button.add_theme_stylebox_override("pressed", pressed)
+    button.button_down.connect(func() -> void: Input.action_press(action))
+    button.button_up.connect(func() -> void: Input.action_release(action))
+    parent.add_child(button)
 
 func _interact_nearby() -> void:
     if player == null: return
