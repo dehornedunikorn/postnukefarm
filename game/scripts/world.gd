@@ -385,10 +385,21 @@ func _find_building_key(prefix: String, tokens: Array[String]) -> String:
                 return str(key)
     return ""
 
+func _add_building_collision(pos: Vector3, size: Vector3) -> void:
+    var body := StaticBody3D.new()
+    body.position = pos
+    var collision := CollisionShape3D.new()
+    var shape := BoxShape3D.new()
+    shape.size = size
+    collision.shape = shape
+    collision.position.y = size.y * 0.5
+    body.add_child(collision)
+    model_root.add_child(body)
+
 func _populate_quaternius_buildings() -> void:
     var home_key := _find_building_key("farm_", ["silo_house", "smallbarn", "barn"])
     if home_key == "":
-        home_key = _find_building_key("village_", ["house", "farmhouse", "cottage", "inn", "tavern"])
+        home_key = _find_building_key("village_", ["house", "farmhouse", "cottage", "inn"])
     if home_key == "":
         home_key = _find_building_key("medieval_", ["house", "cottage"])
 
@@ -398,14 +409,7 @@ func _populate_quaternius_buildings() -> void:
             var old_house := get_node_or_null("Farmhouse")
             if old_house: old_house.queue_free()
             farmhouse.name = "QuaterniusFarmhouse"
-            var body := StaticBody3D.new()
-            var collision := CollisionShape3D.new()
-            var shape := BoxShape3D.new()
-            shape.size = Vector3(7.2, 4.0, 6.0)
-            collision.shape = shape
-            collision.position.y = 2.0
-            body.add_child(collision)
-            farmhouse.add_child(body)
+            _add_building_collision(Vector3(9, 0, -7), Vector3(7.2, 4.0, 6.0))
 
     var well_key := _find_building_key("farm_", ["well"])
     if well_key == "":
@@ -421,13 +425,14 @@ func _populate_quaternius_buildings() -> void:
     var fence_key := _find_building_key("farm_", ["fence"])
     if fence_key == "":
         fence_key = _find_building_key("village_", ["fence"])
+    if fence_key == "":
+        fence_key = _find_building_key("medieval_", ["fence"])
     if fence_key != "":
         var first_fence := _spawn_building_asset(fence_key, Vector3(18, 0, 8), 1.0)
         if first_fence:
             var old_fence := get_node_or_null("FencePlaceholder")
             if old_fence: old_fence.queue_free()
             _add_fence_collision(Vector3(18, 0, 8), 0.0)
-            # Enclose a dedicated grazing paddock with a clear entrance on the west side.
             for x in [24.0, 30.0]:
                 _spawn_building_asset(fence_key, Vector3(x, 0, 8), 1.0)
                 _spawn_building_asset(fence_key, Vector3(x, 0, 24), 1.0)
@@ -440,34 +445,50 @@ func _populate_quaternius_buildings() -> void:
                 _spawn_building_asset(fence_key, Vector3(33, 0, z), 1.0, PI * 0.5)
                 _add_fence_collision(Vector3(15, 0, z), PI * 0.5)
                 _add_fence_collision(Vector3(33, 0, z), PI * 0.5)
-            var gate_key := _find_building_key("farm_", ["fence2"])
-            if gate_key == "":
-                gate_key = _find_building_key("village_", ["gate"])
-            if gate_key != "":
-                _spawn_building_asset(gate_key, Vector3(15, 0, 17), 1.0, PI * 0.5)
 
-    var barn_key := _find_building_key("farm_", ["barn"])
-    if barn_key == "":
-        barn_key = _find_building_key("village_", ["barn", "stable", "shed", "blacksmith"])
-    if barn_key != "":
-        _spawn_building_asset(barn_key, Vector3(31, 0, -22), 1.0)
+    var stable_key := _find_building_key("farm_", ["barn", "smallbarn"])
+    if stable_key == "":
+        stable_key = _find_building_key("village_", ["stable", "barn"])
+    if stable_key != "":
+        var stable := _spawn_building_asset(stable_key, Vector3(31, 0, -22), 1.0)
+        if stable:
+            _add_building_collision(Vector3(31, 0, -22), Vector3(7.0, 3.6, 6.0))
 
-    var coop_key := _find_building_key("farm_", ["chickencoop"])
-    if coop_key == "":
-        coop_key = _find_building_key("village_", ["coop", "stable"])
-    if coop_key != "":
-        _spawn_building_asset(coop_key, Vector3(26, 0, 21), 0.82)
+    var blacksmith_key := _find_building_key("village_", ["blacksmith"])
+    if blacksmith_key != "":
+        var blacksmith := _spawn_building_asset(blacksmith_key, Vector3(-25, 0, -20), 0.95)
+        if blacksmith:
+            _add_building_collision(Vector3(-25, 0, -20), Vector3(6.0, 3.5, 5.5))
 
-    var windmill_key := _find_building_key("farm_", ["windmill"])
-    if windmill_key == "":
-        windmill_key = _find_building_key("village_", ["windmill", "mill"])
-    if windmill_key != "":
-        _spawn_building_asset(windmill_key, Vector3(-32, 0, -27), 1.15)
+    var mill_key := _find_building_key("farm_", ["windmill"])
+    if mill_key == "":
+        mill_key = _find_building_key("village_", ["windmill", "mill"])
+    if mill_key != "":
+        var mill := _spawn_building_asset(mill_key, Vector3(-32, 0, -27), 1.05)
+        if mill:
+            _add_building_collision(Vector3(-32, 0, -27), Vector3(7.0, 4.0, 7.0))
 
-    var market_key := _find_building_key("village_", ["market", "cart", "wagon"])
-    if market_key != "":
-        _spawn_building_asset(market_key, Vector3(-10, 0, 19), 0.9)
+    var gazebo_key := _find_building_key("village_", ["gazebo"])
+    if gazebo_key != "":
+        _spawn_building_asset(gazebo_key, Vector3(26, 0, 21), 0.95)
 
+    if building_scenes.has("village_marketstand_1"):
+        _spawn_building_asset("village_marketstand_1", Vector3(-11, 0, 19), 0.9)
+    if building_scenes.has("village_marketstand_2"):
+        _spawn_building_asset("village_marketstand_2", Vector3(-5, 0, 19), 0.9)
+    if building_scenes.has("village_cart"):
+        _spawn_building_asset("village_cart", Vector3(27, 0, -15), 0.9)
+    if building_scenes.has("village_bell_tower"):
+        _spawn_building_asset("village_bell_tower", Vector3(-7, 0, -28), 0.9)
+    if building_scenes.has("village_bonfire_lit"):
+        _spawn_building_asset("village_bonfire_lit", Vector3(-8, 0, 21), 0.85)
+    if building_scenes.has("village_barrel"):
+        _spawn_building_asset("village_barrel", Vector3(12, 0, -5), 0.7)
+        _spawn_building_asset("village_barrel", Vector3(12.8, 0, -5.2), 0.65)
+    if building_scenes.has("village_crate"):
+        _spawn_building_asset("village_crate", Vector3(7, 0, -5.5), 0.7)
+    if building_scenes.has("village_hay"):
+        _spawn_building_asset("village_hay", Vector3(27, 0, 20), 0.8)
 
 func sanitize_model(root: Node) -> bool:
     if root is MeshInstance3D:
