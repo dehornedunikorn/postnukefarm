@@ -22,12 +22,12 @@ All packs below are published by Quaternius and marked CC0 on their source pages
 - Modular medieval building kit, OBJ.
 - Provides a fallback village architecture set.
 
-## 4. Farm Buildings Pack
-- Source: https://quaternius.com/packs/farmbuildings.html
-- Public creator folder: https://drive.google.com/drive/folders/1gdZ39vcLML_ULU5sHirkKQ-gEkk458Ak?usp=sharing
-- 13 farm structures and props: barns, silo house, silo, windmill, water tower, chicken coop, well and fences.
-- Downloaded from the public Google Drive folder with gdown; FBX/Blend files are discarded and OBJ models are imported.
-- Used for the farmhouse, barn, coop, well, fence, windmill, water tower and silo.
+## 4. LowPoly Medieval Village Pack
+- Source: https://opengameart.org/content/lowpoly-medieval-village-pack
+- Archive: https://opengameart.org/sites/default/files/medieval_village_pack_-_dec_2020.zip
+- Complete Quaternius medieval buildings and village props in FBX, OBJ and Blend formats.
+- OBJ versions are used for reliable browser import.
+- Used for the farmhouse, well, secondary village structures and decorative props.
 
 ## 5. LowPoly RPG Characters
 - Source: https://quaternius.com/packs/rpgcharacters.html
@@ -42,15 +42,13 @@ All packs below are published by Quaternius and marked CC0 on their source pages
 - Static OBJ versions are imported for stable browser rendering; a lightweight wandering behavior animates the animals in the valley.
 
 ## Build/import pipeline
-`scripts/build_web.sh` downloads the five public archives and the Farm Buildings
-folder. `scripts/extract_quaternius.py` preserves the original folder layout,
+`scripts/build_web.sh` downloads all six public CC0 archives. `scripts/extract_quaternius.py` preserves the original folder layout,
 model files, MTL files and referenced textures. Godot 4.3 imports these
 resources during CI. The game loads local imported scenes; it does not fetch
 models from third-party hosts at runtime.
 
 The build also runs the main scene headlessly before Web export as a startup
-smoke test. If the public Farm Buildings folder is unavailable, the modular
-medieval kit remains available as a fallback.
+smoke test. The Modular Medieval Buildings kit supplies additional pieces alongside the complete village assets.
 
 ## Licence note
 The source pages identify the packs as CC0 / Creative Commons Zero. Keep this
