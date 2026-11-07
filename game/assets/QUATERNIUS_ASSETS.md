@@ -22,8 +22,20 @@ All packs below are published by Quaternius and marked CC0 on their source pages
 - Modular medieval building kit, FBX/OBJ.
 - Bundled for the village/farm building environment.
 
+## 4. LowPoly RPG Characters
+- Source: https://quaternius.com/packs/rpgcharacters.html
+- Archive: https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip
+- Six rigged, animated and textured fantasy characters.
+- Used as the player avatar.
+
+## 5. LowPoly Animated Farm Animal Pack
+- Source: https://opengameart.org/content/lowpoly-animated-farm-animal-pack
+- Archive: https://opengameart.org/sites/default/files/Farm%20Animals%20by%20%40Quaternius.zip
+- Cow, sheep, pig, horse, llama and dog models.
+- Static OBJ versions are imported for stable browser rendering and placed around the farm.
+
 ## Build/import pipeline
-`scripts/build_web.sh` downloads the archives and runs
+`scripts/build_web.sh` downloads all five archives and runs
 `scripts/extract_quaternius.py`. The extractor preserves the original folder
 layout, model files, MTL files and referenced textures. Godot 4.3 imports
 these resources during CI. The game then loads the local imported scenes;
