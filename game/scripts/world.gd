@@ -356,7 +356,6 @@ func _spawn_building_asset(key: String, pos: Vector3, scale_factor: float = 1.0,
     var instance := packed.instantiate() as Node3D
     if instance == null: return null
     sanitize_model(instance)
-    sanitize_model(instance)
     instance.position = pos
     instance.scale = Vector3.ONE * scale_factor
     instance.rotation.y = yaw
@@ -442,6 +441,7 @@ func _spawn_model(key: String, pos: Vector3, scale_factor: float, yaw: float = 0
     elif source is Node3D:
         instance = source.duplicate() as Node3D
     if instance == null: return
+    sanitize_model(instance)
     instance.position = pos
     instance.scale = Vector3.ONE * scale_factor
     instance.rotation.y = yaw
