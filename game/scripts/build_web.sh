@@ -32,7 +32,7 @@ python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius.zip" --dest
 download "https://opengameart.org/sites/default/files/nature_crops_pack_by_quaternius.zip" "$TMP_DIR/quaternius-crops.zip"
 python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-crops.zip" --destination assets/quaternius --subdir crops --include-legacy-formats --prefer-obj --include "apple,carrot,corn,lettuce,pumpkin,wheat,tomato,rice,mushroom,watermelon,beet,bamboo,bushberries"
 
-# Quaternius LowPoly RPG Characters: six rigged fantasy avatars.
+# Quaternius LowPoly RPG Characters: six fantasy avatars; static OBJ for browser stability.
 download "https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip" "$TMP_DIR/quaternius-characters.zip"
 python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats --prefer-obj --include "warrior,ranger,wizard,monk,cleric,rogue"
 
@@ -81,5 +81,10 @@ PY
 
 echo "Exporting Godot Web build..."
 "$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-release "Web" "$PROJECT_DIR/build/web/index.html"
-test -s "$PROJECT_DIR/build/web/index.html"
+for required in index.html index.js index.wasm index.pck; do
+    if [ ! -s "$PROJECT_DIR/build/web/$required" ]; then
+        echo "Missing required Web export file: $required"
+        exit 1
+    fi
+done
 echo "Everdawn Web export completed successfully."
