@@ -27,6 +27,10 @@ python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-crops.zip" 
 curl -fsSL "https://opengameart.org/sites/default/files/Modular%20Medieval%20Pack%20by%20%40Quaternius_0.zip" -o "$TMP_DIR/quaternius-buildings.zip"
 python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-buildings.zip" --destination assets/quaternius --subdir buildings --include-legacy-formats
 
+# Quaternius LowPoly RPG Characters (CC0): six rigged fantasy avatars.
+curl -fsSL "https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip" -o "$TMP_DIR/quaternius-characters.zip"
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats
+
 curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o "$TMP_DIR/godot.zip"
 unzip -q "$TMP_DIR/godot.zip" -d "$TMP_DIR/godot"
 GODOT_BIN="$(find "$TMP_DIR/godot" -maxdepth 1 -type f -name 'Godot*' | head -n 1)"
