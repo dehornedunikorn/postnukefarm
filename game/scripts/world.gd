@@ -214,25 +214,32 @@ func _build_farm() -> void:
     _make_fence()
 
 func _make_well(p: Vector3) -> void:
-    var well := MeshInstance3D.new()
+    var well := Node3D.new()
+    well.name = "WellPlaceholder"
+    well.position = p
+    add_child(well)
+    var mesh_node := MeshInstance3D.new()
     var mesh := CylinderMesh.new()
     mesh.top_radius = 0.8
     mesh.bottom_radius = 0.95
     mesh.height = 0.9
-    well.mesh = mesh
-    well.position = p + Vector3(0, 0.45, 0)
-    well.material_override = _mat(Color("#b9aa88"))
-    add_child(well)
-    _box(self, Vector3(2.1, 0.15, 0.18), p + Vector3(0, 1.55, 0), Color("#65442e"))
-    _box(self, Vector3(0.15, 1.4, 0.15), p + Vector3(-0.8, 1.1, 0), Color("#65442e"))
-    _box(self, Vector3(0.15, 1.4, 0.15), p + Vector3(0.8, 1.1, 0), Color("#65442e"))
+    mesh_node.mesh = mesh
+    mesh_node.position.y = 0.45
+    mesh_node.material_override = _mat(Color("#b9aa88"))
+    well.add_child(mesh_node)
+    _box(well, Vector3(2.1, 0.15, 0.18), Vector3(0, 1.55, 0), Color("#65442e"))
+    _box(well, Vector3(0.15, 1.4, 0.15), Vector3(-0.8, 1.1, 0), Color("#65442e"))
+    _box(well, Vector3(0.15, 1.4, 0.15), Vector3(0.8, 1.1, 0), Color("#65442e"))
 
 func _make_fence() -> void:
+    var fence := Node3D.new()
+    fence.name = "FencePlaceholder"
+    add_child(fence)
     var wood := _mat(Color("#87603d"))
     for x in range(-13, 16, 2):
-        _box(self, Vector3(0.14, 0.85, 0.14), Vector3(float(x), 0.42, 7.5), Color.WHITE, wood)
-    _box(self, Vector3(28, 0.12, 0.12), Vector3(1, 0.65, 7.5), Color.WHITE, wood)
-    _box(self, Vector3(28, 0.12, 0.12), Vector3(1, 0.32, 7.5), Color.WHITE, wood)
+        _box(fence, Vector3(0.14, 0.85, 0.14), Vector3(float(x), 0.42, 7.5), Color.WHITE, wood)
+    _box(fence, Vector3(28, 0.12, 0.12), Vector3(1, 0.65, 7.5), Color.WHITE, wood)
+    _box(fence, Vector3(28, 0.12, 0.12), Vector3(1, 0.32, 7.5), Color.WHITE, wood)
 
 func _make_lantern(p: Vector3) -> void:
     _box(self, Vector3(0.13, 2.0, 0.13), p + Vector3(0, 1, 0), Color("#62442f"))
