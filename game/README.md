@@ -16,11 +16,11 @@ The Vercel build downloads and imports six free CC0 packs:
 1. **Stylized Nature MegaKit — Standard:** 68 glTF/GLB models with referenced buffers and textures.
 2. **LowPoly Crops Pack:** crop models with multiple plant families and growth stages.
 3. **LowPoly Medieval Buildings:** modular medieval building models.
-4. **Farm Buildings Pack:** 13 farm structures and props, including barns, silo house, well, windmill, water tower, chicken coop and fences.
+4. **LowPoly Medieval Village Pack:** complete village buildings and props used for the farmhouse, well, secondary structures and decorative village details.
 5. **LowPoly RPG Characters:** fantasy character models; OBJ versions are used for reliable browser import.
 6. **LowPoly Animated Farm Animal Pack:** livestock models (cow, sheep, pig, horse, llama and dog); OBJ versions are used for reliable browser import.
 
-The build downloads the public Farm Buildings folder with gdown and the other packs from their CC0 public archives. The extractor preserves model dependencies, MTL files and textures, and deduplicates FBX/OBJ variants. Godot imports assets locally during CI; the running game does not fetch models from third-party hosts. If the public Farm Buildings folder is temporarily unavailable, the modular medieval kit remains as the building fallback.
+The build downloads all six packs from their public CC0 archives. The extractor preserves model dependencies, MTL files and textures, and deduplicates FBX/OBJ variants. Godot imports assets locally during CI; the running game does not fetch models from third-party hosts. The modular medieval kit provides additional architecture pieces alongside the complete village buildings.
 
 ## Licensing
 The source pages identify these Quaternius packs as CC0. See:
