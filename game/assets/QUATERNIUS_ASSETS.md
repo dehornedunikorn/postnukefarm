@@ -33,7 +33,7 @@ All packs below are published by Quaternius and marked CC0 on their source pages
 - Source: https://quaternius.com/packs/rpgcharacters.html
 - Archive: https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip
 - Six fantasy character models.
-- OBJ versions are used as the player avatar for stable browser import.
+- OBJ versions are used as the player avatar for stable browser import; lightweight bobbing animates the avatar while walking.
 
 ## 6. LowPoly Animated Farm Animal Pack
 - Source: https://opengameart.org/content/lowpoly-animated-farm-animal-pack
