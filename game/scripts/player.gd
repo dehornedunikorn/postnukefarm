@@ -10,27 +10,23 @@ func _ready() -> void:
     var avatar_scene: PackedScene = null
     if world != null and world.has_method("get_character_scene"):
         avatar_scene = world.call("get_character_scene") as PackedScene
+    var avatar_valid := false
     if avatar_scene != null:
         var avatar := avatar_scene.instantiate() as Node3D
         if avatar != null:
             avatar.name = "QuaterniusFarmer"
-            if world.has_method("sanitize_model"):
-                world.call("sanitize_model", avatar)
-            avatar.scale = Vector3.ONE * 0.9
-            avatar.position.y = 0.0
-            add_child(avatar)
-            character_visual = avatar
-    else:
-        # Development fallback while the Quaternius character archive is unavailable.
-        _part(CapsuleMesh.new(), Vector3(0, 1.0, 0), Vector3(0.72, 1.0, 0.42), Color("#6b8060"))
-        _part(SphereMesh.new(), Vector3(0, 1.92, 0), Vector3(0.48, 0.48, 0.46), Color("#e8bd91"))
-        _part(CylinderMesh.new(), Vector3(0, 2.18, 0), Vector3(0.72, 0.12, 0.72), Color("#a66e3e"))
-        _part(CylinderMesh.new(), Vector3(0, 2.28, 0), Vector3(0.42, 0.24, 0.42), Color("#b77c43"))
-        _part(BoxMesh.new(), Vector3(-0.43, 1.0, -0.03), Vector3(0.42, 0.72, 0.35), Color("#8b5438"))
-        _part(CapsuleMesh.new(), Vector3(-0.25, 0.42, 0), Vector3(0.26, 0.68, 0.28), Color("#584637"))
-        _part(CapsuleMesh.new(), Vector3(0.25, 0.42, 0), Vector3(0.26, 0.68, 0.28), Color("#584637"))
-        _part(CapsuleMesh.new(), Vector3(-0.49, 1.12, 0), Vector3(0.22, 0.68, 0.22), Color("#e8bd91"))
-        _part(CapsuleMesh.new(), Vector3(0.49, 1.12, 0), Vector3(0.22, 0.68, 0.22), Color("#e8bd91"))
+            avatar_valid = true
+            if world != null and world.has_method("sanitize_model"):
+                avatar_valid = bool(world.call("sanitize_model", avatar))
+            if avatar_valid:
+                avatar.scale = Vector3.ONE * 0.9
+                avatar.position.y = 0.0
+                add_child(avatar)
+                character_visual = avatar
+            else:
+                avatar.free()
+    if not avatar_valid:
+        _build_procedural_avatar()
 
     var collision := CollisionShape3D.new()
     var shape := CapsuleShape3D.new()
@@ -48,6 +44,18 @@ func _ready() -> void:
     camera.rotation_degrees.x = -17
     camera.current = true
     camera_pivot.add_child(camera)
+
+func _build_procedural_avatar() -> void:
+    # Last-resort fallback if an imported Quaternius character has no valid mesh.
+    _part(CapsuleMesh.new(), Vector3(0, 1.0, 0), Vector3(0.72, 1.0, 0.42), Color("#6b8060"))
+    _part(SphereMesh.new(), Vector3(0, 1.92, 0), Vector3(0.48, 0.48, 0.46), Color("#e8bd91"))
+    _part(CylinderMesh.new(), Vector3(0, 2.18, 0), Vector3(0.72, 0.12, 0.72), Color("#a66e3e"))
+    _part(CylinderMesh.new(), Vector3(0, 2.28, 0), Vector3(0.42, 0.24, 0.42), Color("#b77c43"))
+    _part(BoxMesh.new(), Vector3(-0.43, 1.0, -0.03), Vector3(0.42, 0.72, 0.35), Color("#8b5438"))
+    _part(CapsuleMesh.new(), Vector3(-0.25, 0.42, 0), Vector3(0.26, 0.68, 0.28), Color("#584637"))
+    _part(CapsuleMesh.new(), Vector3(0.25, 0.42, 0), Vector3(0.26, 0.68, 0.28), Color("#584637"))
+    _part(CapsuleMesh.new(), Vector3(-0.49, 1.12, 0), Vector3(0.22, 0.68, 0.22), Color("#e8bd91"))
+    _part(CapsuleMesh.new(), Vector3(0.49, 1.12, 0), Vector3(0.22, 0.68, 0.22), Color("#e8bd91"))
 
 func _part(mesh: Mesh, pos: Vector3, dimensions: Vector3, color: Color) -> void:
     var node := MeshInstance3D.new()
