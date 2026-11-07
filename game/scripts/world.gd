@@ -290,6 +290,12 @@ func _load_quaternius_models() -> void:
         if path.to_lower().contains("/buildings/"):
             building_scenes[filename] = packed
             continue
+        if path.to_lower().contains("/crops/"):
+            var family := filename.split("_")[0]
+            var variants: Array = crop_families.get(family, [])
+            variants.append(packed)
+            crop_families[family] = variants
+            continue
         if filename.contains("tree") or filename.contains("pine") or filename.contains("birch"):
             var tree_key := "tree_%d" % tree_keys.size()
             model_scenes[tree_key] = packed
@@ -318,11 +324,6 @@ func _load_quaternius_models() -> void:
             var rock_key := "rock_%d" % rock_keys.size()
             model_scenes[rock_key] = packed
             rock_keys.append(rock_key)
-        elif filename.begins_with("apple") or filename.begins_with("carrot") or filename.begins_with("corn") or filename.begins_with("lettuce") or filename.begins_with("pumpkin") or filename.begins_with("wheat") or filename.begins_with("tomato") or filename.begins_with("rice") or filename.begins_with("mushroom") or filename.begins_with("watermelon") or filename.begins_with("beet") or filename.begins_with("bamboo") or filename.begins_with("bushberries"):
-            var family := filename.split("_")[0]
-            var variants: Array = crop_families.get(family, [])
-            variants.append(packed)
-            crop_families[family] = variants
 
     if tree_keys.size() > 0:
         _populate_quaternius_forest()
