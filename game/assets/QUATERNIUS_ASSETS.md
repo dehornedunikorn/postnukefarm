@@ -12,8 +12,8 @@ All packs below are published by Quaternius and marked CC0 on their source pages
 ## 2. LowPoly Crops Pack
 - Source: https://opengameart.org/content/lowpoly-crops-pack
 - Archive: https://opengameart.org/sites/default/files/nature_crops_pack_by_quaternius.zip
-- Twelve selected crop families and their growth-stage variants are used.
-- OBJ meshes and their material/texture files are preserved.
+- Twelve selected crop families are used, with one compact OBJ model per family scaled through the growth cycle.
+- Only referenced material/texture dependencies are preserved.
 - Used for the crop visuals in garden beds.
 
 ## 3. LowPoly Medieval Village Pack
@@ -26,14 +26,14 @@ All packs below are published by Quaternius and marked CC0 on their source pages
 ## 4. LowPoly RPG Characters
 - Source: https://quaternius.com/packs/rpgcharacters.html
 - Archive: https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip
-- Six fantasy character models.
-- OBJ versions are used as the player avatar for stable browser import; lightweight bobbing animates the avatar while walking.
+- Six fantasy character models are available.
+- The Ranger OBJ is used as the player avatar; lightweight bobbing animates the avatar while walking.
 
 ## 5. LowPoly Animated Farm Animal Pack
 - Source: https://opengameart.org/content/lowpoly-animated-farm-animal-pack
 - Archive: https://opengameart.org/sites/default/files/Farm%20Animals%20by%20%40Quaternius.zip
-- Cow, sheep, pig, horse, llama and dog models.
-- Static OBJ versions are imported for stable browser rendering; a lightweight wandering behavior animates the animals in the valley.
+- Low-poly livestock models from the pack.
+- Selected static OBJ versions are imported for stable browser rendering; lightweight wandering behavior animates the animals in the valley.
 
 ## Build/import pipeline
 `scripts/build_web.sh` downloads all five public CC0 archives. `scripts/extract_quaternius.py` preserves the original folder layout,
