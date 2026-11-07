@@ -30,7 +30,7 @@ python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius.zip" --dest
 
 # Quaternius LowPoly Crops Pack: crop families and growth stages.
 download "https://opengameart.org/sites/default/files/nature_crops_pack_by_quaternius.zip" "$TMP_DIR/quaternius-crops.zip"
-python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-crops.zip" --destination assets/quaternius --subdir crops --include-legacy-formats
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-crops.zip" --destination assets/quaternius --subdir crops --include-legacy-formats --prefer-obj
 
 # Quaternius LowPoly Medieval Buildings: modular village structures.
 download "https://opengameart.org/sites/default/files/Modular%20Medieval%20Pack%20by%20%40Quaternius_0.zip" "$TMP_DIR/quaternius-buildings.zip"
@@ -38,7 +38,31 @@ python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-buildings.z
 
 # Quaternius LowPoly RPG Characters: six rigged fantasy avatars.
 download "https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip" "$TMP_DIR/quaternius-characters.zip"
-python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats --prefer-obj
+
+# Quaternius LowPoly Farm Buildings (CC0), hosted in the creator's public Drive folder.
+# gdown handles the public folder listing and downloads the individual OBJ/MTL assets.
+echo "Downloading Quaternius farm buildings..."
+if python3 -m pip install --quiet --disable-pip-version-check gdown; then
+    if python3 - <<'PY'
+import gdown
+import sys
+url = "https://drive.google.com/drive/folders/1gdZ39vcLML_ULU5sHirkKQ-gEkk458Ak?usp=sharing"
+files = gdown.download_folder(url, output="assets/quaternius/farm_buildings", quiet=False, use_cookies=False)
+if not files:
+    sys.exit(1)
+print(f"Downloaded {len(files)} Quaternius farm-building files.")
+PY
+    then
+        find assets/quaternius/farm_buildings -type f -iname '*.fbx' -delete
+        find assets/quaternius/farm_buildings -type f -iname '*.blend' -delete
+        echo "Prepared Quaternius farm-building OBJ assets."
+    else
+        echo "Farm Buildings Drive folder could not be fetched; keeping the modular medieval Quaternius kit."
+    fi
+else
+    echo "gdown unavailable; keeping the modular medieval Quaternius kit."
+fi
 
 # Quaternius LowPoly Animated Farm Animals: static OBJ geometry for browser stability.
 download "https://opengameart.org/sites/default/files/Farm%20Animals%20by%20%40Quaternius.zip" "$TMP_DIR/quaternius-animals.zip"
