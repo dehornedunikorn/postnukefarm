@@ -238,8 +238,13 @@ func _load_quaternius_models() -> void:
     var paths: Array[String] = []
     _collect_model_paths("res://assets/quaternius", paths)
     paths.sort()
+    var loaded_asset_names: Dictionary = {}
     for path in paths:
-        var filename := path.get_file().get_basename().to_lower().replace(" ", "_")
+        var asset_name := path.get_file().get_basename().to_lower()
+        if loaded_asset_names.has(asset_name):
+            continue
+        loaded_asset_names[asset_name] = true
+        var filename := asset_name.replace(" ", "_")
         var packed := ResourceLoader.load(path) as PackedScene
         if packed == null: continue
 
