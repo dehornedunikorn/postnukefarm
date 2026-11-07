@@ -43,8 +43,8 @@ python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.
 # Quaternius LowPoly Farm Buildings (CC0), hosted in the creator's public Drive folder.
 # gdown handles the public folder listing and downloads the individual OBJ/MTL assets.
 echo "Downloading Quaternius farm buildings..."
-if python3 -m pip install --quiet --disable-pip-version-check gdown; then
-    if python3 - <<'PY'
+if python3 -m pip install --quiet --disable-pip-version-check --target "$TMP_DIR/gdown" gdown; then
+    if PYTHONPATH="$TMP_DIR/gdown${PYTHONPATH:+:$PYTHONPATH}" python3 - <<'PY'
 import gdown
 import sys
 url = "https://drive.google.com/drive/folders/1gdZ39vcLML_ULU5sHirkKQ-gEkk458Ak?usp=sharing"
