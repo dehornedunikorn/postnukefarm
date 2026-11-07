@@ -23,6 +23,10 @@ python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius.zip" --dest
 curl -fsSL "https://opengameart.org/sites/default/files/nature_crops_pack_by_quaternius.zip" -o "$TMP_DIR/quaternius-crops.zip"
 python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-crops.zip" --destination assets/quaternius --subdir crops --include-legacy-formats
 
+# Quaternius LowPoly Medieval Buildings (CC0): modular village structures.
+curl -fsSL "https://opengameart.org/sites/default/files/Modular%20Medieval%20Pack%20by%20%40Quaternius_0.zip" -o "$TMP_DIR/quaternius-buildings.zip"
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-buildings.zip" --destination assets/quaternius --subdir buildings --include-legacy-formats
+
 curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o "$TMP_DIR/godot.zip"
 unzip -q "$TMP_DIR/godot.zip" -d "$TMP_DIR/godot"
 GODOT_BIN="$(find "$TMP_DIR/godot" -maxdepth 1 -type f -name 'Godot*' | head -n 1)"
