@@ -469,6 +469,18 @@ func _populate_quaternius_buildings() -> void:
         if mill:
             _add_building_collision(Vector3(-32, 0, -27), Vector3(7.0, 4.0, 7.0))
 
+    var inn_key := _find_building_key("village_", ["inn"])
+    if inn_key != "":
+        var inn := _spawn_building_asset(inn_key, Vector3(-17, 0, -25), 0.95)
+        if inn:
+            _add_building_collision(Vector3(-17, 0, -25), Vector3(7.0, 4.0, 6.0))
+
+    var sawmill_key := _find_building_key("village_", ["sawmill"])
+    if sawmill_key != "":
+        var sawmill := _spawn_building_asset(sawmill_key, Vector3(-28, 0, -10), 0.9)
+        if sawmill:
+            _add_building_collision(Vector3(-28, 0, -10), Vector3(6.0, 3.5, 5.5))
+
     var gazebo_key := _find_building_key("village_", ["gazebo"])
     if gazebo_key != "":
         _spawn_building_asset(gazebo_key, Vector3(26, 0, 21), 0.95)
