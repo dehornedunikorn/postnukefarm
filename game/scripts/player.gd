@@ -5,7 +5,9 @@ var gravity := 22.0
 
 func _ready() -> void:
     var world := get_parent()
-    var avatar_scene: PackedScene = world.get_character_scene() if world != null and world.has_method("get_character_scene") else null
+    var avatar_scene: PackedScene = null
+    if world != null and world.has_method("get_character_scene"):
+        avatar_scene = world.call("get_character_scene") as PackedScene
     if avatar_scene != null:
         var avatar := avatar_scene.instantiate() as Node3D
         if avatar != null:
