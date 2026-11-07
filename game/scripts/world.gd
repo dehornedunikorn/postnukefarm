@@ -229,7 +229,7 @@ func _collect_model_paths(folder: String, output: Array[String]) -> void:
         if dir.current_is_dir():
             if not entry.begins_with("."):
                 _collect_model_paths(folder.path_join(entry), output)
-        elif entry.to_lower().ends_with(".gltf") or entry.to_lower().ends_with(".glb"):
+        elif entry.to_lower().ends_with(".gltf") or entry.to_lower().ends_with(".glb") or entry.to_lower().ends_with(".fbx") or entry.to_lower().ends_with(".obj"):
             output.append(folder.path_join(entry))
         entry = dir.get_next()
     dir.list_dir_end()
