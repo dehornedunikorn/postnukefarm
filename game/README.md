@@ -13,8 +13,8 @@ A cozy third-person 3D fantasy farming game built in Godot 4, targeting desktop 
 
 ## Quaternius asset packs
 The Vercel build downloads and imports six free CC0 packs:
-1. **Stylized Nature MegaKit — Standard:** 68 glTF/GLB models with referenced buffers and textures.
-2. **LowPoly Crops Pack:** crop models with multiple plant families and growth stages.
+1. **Stylized Nature MegaKit — Standard:** 68 models are available; the build imports the relevant trees, bushes, flowers, grass and rocks with their textures.
+2. **LowPoly Crops Pack:** crop models with 12 selected plant families and multiple growth stages.
 3. **LowPoly Medieval Buildings:** modular medieval building models.
 4. **LowPoly Medieval Village Pack:** complete village buildings and props used for the farmhouse, well, secondary structures and decorative village details.
 5. **LowPoly RPG Characters:** fantasy character models; OBJ versions are used for reliable browser import.
