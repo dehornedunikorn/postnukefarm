@@ -21,6 +21,7 @@ var grass_keys: Array[String] = []
 var crop_families: Dictionary = {}
 var character_scenes: Array[PackedScene] = []
 var animal_scenes: Dictionary = {}
+var building_scenes: Dictionary = {}
 var model_load_status := "Loading the valley's living art..."
 var load_count := 0
 var model_root: Node3D
@@ -259,6 +260,9 @@ func _load_quaternius_models() -> void:
                     animal_scenes[species] = packed
                     break
             continue
+        if path.to_lower().contains("/buildings/"):
+            building_scenes[filename] = packed
+            continue
         if filename.contains("tree") or filename.contains("pine") or filename.contains("birch"):
             var tree_key := "tree_%d" % tree_keys.size()
             model_scenes[tree_key] = packed
@@ -292,6 +296,7 @@ func _load_quaternius_models() -> void:
     if tree_keys.size() > 0:
         _populate_quaternius_forest()
     _populate_farm_animals()
+    _replace_farmhouse_with_quaternius()
     model_load_status = "Quaternius CC0 · %d trees · %d bushes · %d flowers · %d crop families · %d animal types" % [tree_keys.size(), bush_keys.size(), flower_keys.size() + clover_keys.size(), crop_families.size(), animal_scenes.size()]
     update_hud()
 
@@ -352,6 +357,32 @@ func _populate_quaternius_forest() -> void:
         for i in range(rock_spots.size()):
             var rock_key: String = rock_keys[i % rock_keys.size()]
             _spawn_model(rock_key, rock_spots[i], randf_range(0.7, 1.25), randf_range(0.0, TAU))
+
+func _replace_farmhouse_with_quaternius() -> void:
+    var chosen_key := ""
+    for key in building_scenes.keys():
+        if key.contains("house") and not key.contains("wall") and not key.contains("roof"):
+            chosen_key = key
+            break
+    if chosen_key == "":
+        return
+    var old_house := get_node_or_null("Farmhouse")
+    if old_house:
+        old_house.queue_free()
+    var farmhouse := building_scenes[chosen_key].instantiate() as Node3D
+    if farmhouse == null: return
+    farmhouse.name = "QuaterniusFarmhouse"
+    farmhouse.position = Vector3(9, 0, -7)
+    farmhouse.scale = Vector3.ONE * 1.5
+    model_root.add_child(farmhouse)
+    var body := StaticBody3D.new()
+    var collision := CollisionShape3D.new()
+    var shape := BoxShape3D.new()
+    shape.size = Vector3(7.2, 4.0, 6.0)
+    collision.shape = shape
+    collision.position.y = 2.0
+    body.add_child(collision)
+    farmhouse.add_child(body)
 
 func _populate_farm_animals() -> void:
     var placements := {
