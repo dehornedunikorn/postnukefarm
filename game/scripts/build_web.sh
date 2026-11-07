@@ -47,19 +47,23 @@ download_drive_file() {
     local output="$2"
     mkdir -p "$(dirname "$output")"
     local browser_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
+    local urls=(
+        "https://drive.usercontent.google.com/download?id=${file_id}&export=download&authuser=0&confirm=t"
+        "https://drive.google.com/uc?export=download&id=${file_id}"
+        "https://drive.google.com/uc?id=${file_id}"
+    )
     echo "Downloading Quaternius farm model $(basename "$output")..."
-    if ! curl --fail --location --silent --show-error --user-agent "$browser_ua" \
-        --connect-timeout 15 --max-time 60 --retry 1 --retry-delay 1 \
-        "https://drive.usercontent.google.com/download?id=${file_id}&export=download&authuser=0&confirm=t" -o "$output"; then
-        curl --fail --location --silent --show-error --user-agent "$browser_ua" \
-            --connect-timeout 15 --max-time 60 --retry 1 --retry-delay 1 \
-            "https://drive.google.com/uc?export=download&id=${file_id}" -o "$output" || return 1
-    fi
-    test -s "$output" || return 1
-    if head -c 256 "$output" | grep -qiE '<!doctype|<html|Google Drive'; then
-        rm -f "$output"
-        return 1
-    fi
+    for url in "${urls[@]}"; do
+        if curl --fail --location --silent --show-error --user-agent "$browser_ua" \
+            --connect-timeout 15 --max-time 45 --retry 1 --retry-delay 1 \
+            "$url" -o "$output"; then
+            if test -s "$output" && ! head -c 256 "$output" | grep -qiE '<!doctype|<html|Google Drive'; then
+                return 0
+            fi
+        fi
+    done
+    rm -f "$output"
+    return 1
 }
 
 FARM_FILES=(
