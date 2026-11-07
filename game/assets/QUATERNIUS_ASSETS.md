@@ -5,22 +5,22 @@ All packs below are published by Quaternius and marked CC0 on their source pages
 ## 1. Stylized Nature MegaKit — Standard
 - Source: https://quaternius.com/packs/stylizednaturemegakit.html
 - Public archive: https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip
-- 68 models in the free Standard edition.
+- 68 models in the free Standard edition; the build selects the relevant trees, bushes, flowers, grass and rocks.
 - Extracted as glTF/GLB with referenced buffers and image textures.
 - Used for trees, bushes, ground flora, rocks and stepping-stone paths.
 
 ## 2. LowPoly Crops Pack
 - Source: https://opengameart.org/content/lowpoly-crops-pack
 - Archive: https://opengameart.org/sites/default/files/nature_crops_pack_by_quaternius.zip
-- Crop models include multiple plant families and growth stages.
+- Twelve selected crop families and their growth-stage variants are used.
 - OBJ meshes and their material/texture files are preserved.
 - Used for the crop visuals in garden beds.
 
 ## 3. LowPoly Medieval Village Pack
 - Source: https://opengameart.org/content/lowpoly-medieval-village-pack
 - Archive: https://opengameart.org/sites/default/files/medieval_village_pack_-_dec_2020.zip
-- Complete Quaternius medieval buildings and village props in FBX, OBJ and Blend formats.
-- OBJ versions are used for reliable browser import.
+- Quaternius medieval houses, inn, blacksmith, stable, well, fence, market stalls and props.
+- The build extracts only the structures and props used in the farm; OBJ versions are used for reliable browser import.
 - Used for the farmhouse, well, secondary village structures and decorative props.
 
 ## 4. LowPoly RPG Characters
