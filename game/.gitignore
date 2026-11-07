@@ -2,3 +2,4 @@
 build/
 *.import
 .DS_Store
+assets/quaternius/
