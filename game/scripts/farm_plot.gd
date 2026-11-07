@@ -117,6 +117,8 @@ func _show_crop(height_factor: float) -> void:
         for i in range(5):
             var plant := crop_scene.instantiate() as Node3D
             if plant == null: continue
+            if world.has_method("sanitize_model"):
+                world.call("sanitize_model", plant)
             plant.position = Vector3(-0.66 + i * 0.33, 0.16, 0)
             plant.scale = Vector3.ONE * 0.42
             plant.rotation.y = float(i) * 0.73
