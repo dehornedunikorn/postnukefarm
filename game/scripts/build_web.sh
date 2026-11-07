@@ -40,7 +40,26 @@ python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-buildings.z
 download "https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip" "$TMP_DIR/quaternius-characters.zip"
 python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats --prefer-obj
 
-# Quaternius Farm Buildings Pack (CC0). Download its public OBJ/MTL files
+# Quaternius Farm Buildings Pack (CC0). Prefer the official itch archive;
+# fall back to individual public Drive OBJ/MTL files if itch requires a checkout.
+echo "Trying the official Quaternius Farm Buildings itch archive..."
+FARM_ARCHIVE_OK=0
+for farm_url in \
+    "https://quaternius.itch.io/lowpoly-farm-buildings/download/1125896" \
+    "https://quaternius.itch.io/lowpoly-farm-buildings/file/1125896"; do
+    if curl --fail --location --silent --show-error \
+        --user-agent "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36" \
+        --connect-timeout 15 --max-time 90 "$farm_url" -o "$TMP_DIR/farm-buildings.zip" \
+        && unzip -tq "$TMP_DIR/farm-buildings.zip" >/dev/null 2>&1; then
+        FARM_ARCHIVE_OK=1
+        break
+    fi
+done
+if [ "$FARM_ARCHIVE_OK" -eq 1 ]; then
+    python3 scripts/extract_quaternius.py --archive "$TMP_DIR/farm-buildings.zip" --destination assets/quaternius --subdir farm_buildings --include-legacy-formats --prefer-obj
+    echo "Imported the official Quaternius Farm Buildings archive."
+else
+    echo "The itch direct route is unavailable; trying individual public Drive model files."
 # directly by file ID; the public Drive folder itself is quota-limited.
 download_drive_file() {
     local file_id="$1"
@@ -108,6 +127,7 @@ for item in "${FARM_FILES[@]}"; do
     fi
 done
 echo "Downloaded $FARM_MODEL_COUNT Quaternius Farm Buildings OBJ models."
+fi
 
 # Quaternius LowPoly Animated Farm Animals: static OBJ geometry for browser stability.
 download "https://opengameart.org/sites/default/files/Farm%20Animals%20by%20%40Quaternius.zip" "$TMP_DIR/quaternius-animals.zip"
