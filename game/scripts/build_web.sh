@@ -31,6 +31,10 @@ python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-buildings.z
 curl -fsSL "https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip" -o "$TMP_DIR/quaternius-characters.zip"
 python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats
 
+# Quaternius LowPoly Animated Farm Animal Pack (CC0); OBJ geometry avoids FBX rig import issues.
+curl -fsSL "https://opengameart.org/sites/default/files/Farm%20Animals%20by%20%40Quaternius.zip" -o "$TMP_DIR/quaternius-animals.zip"
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-animals.zip" --destination assets/quaternius --subdir animals --include-legacy-formats --prefer-obj
+
 curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o "$TMP_DIR/godot.zip"
 unzip -q "$TMP_DIR/godot.zip" -d "$TMP_DIR/godot"
 GODOT_BIN="$(find "$TMP_DIR/godot" -maxdepth 1 -type f -name 'Godot*' | head -n 1)"
