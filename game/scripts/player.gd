@@ -14,6 +14,8 @@ func _ready() -> void:
         var avatar := avatar_scene.instantiate() as Node3D
         if avatar != null:
             avatar.name = "QuaterniusFarmer"
+            if world.has_method("sanitize_model"):
+                world.call("sanitize_model", avatar)
             avatar.scale = Vector3.ONE * 0.9
             avatar.position.y = 0.0
             add_child(avatar)
