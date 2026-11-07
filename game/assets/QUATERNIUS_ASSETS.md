@@ -1,29 +1,38 @@
-# Quaternius asset integration
+# Quaternius CC0 asset integration
 
-Pack: Quaternius Stylized Nature MegaKit — Standard
-Creator: Quaternius
-License: CC0 1.0 Universal
-Official pack page: https://quaternius.com/packs/stylizednaturemegakit.html
-Free Standard archive: https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip
-The Standard archive contains 68 models from the full 116-model pack.
+All packs below are published by Quaternius and marked CC0 on their source pages.
 
-## Import pipeline
+## 1. Stylized Nature MegaKit — Standard
+- Source: https://quaternius.com/packs/stylizednaturemegakit.html
+- Public archive mirror: https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip
+- 68 models in the free Standard edition.
+- Extracted as glTF/GLB with referenced buffers and image textures.
+- Used for trees, bushes, ground flora and rocks.
 
-The Vercel/Godot build downloads the official Standard ZIP and runs
-`scripts/extract_quaternius.py`. The extractor keeps glTF/GLB models and
-only their referenced texture and buffer files, excluding duplicate FBX/OBJ
-and Blender source formats. Assets are imported into
-`res://assets/quaternius/` before Godot exports the game.
+## 2. LowPoly Crops Pack
+- Source: https://opengameart.org/content/lowpoly-crops-pack
+- Archive: https://opengameart.org/sites/default/files/nature_crops_pack_by_quaternius.zip
+- Crop models include multiple plant families and growth stages.
+- FBX/OBJ meshes and their material/texture files are preserved.
+- Used for the crop visuals in garden beds.
 
-The game loads the Quaternius tree and bush models as PackedScenes and
-instances them around the farm. The archive is not stored as a binary ZIP in
-GitHub; it is retrieved from the public CC0 source during CI.
+## 3. LowPoly Medieval Buildings
+- Source: https://opengameart.org/content/lowpoly-medieval-buildings
+- Archive: https://opengameart.org/sites/default/files/Modular%20Medieval%20Pack%20by%20%40Quaternius_0.zip
+- Modular medieval building kit, FBX/OBJ.
+- Bundled for the village/farm building environment.
 
-## Additional notes
+## Build/import pipeline
+`scripts/build_web.sh` downloads the archives and runs
+`scripts/extract_quaternius.py`. The extractor preserves the original folder
+layout, model files, MTL files and referenced textures. Godot 4.3 imports
+these resources during CI. The game then loads the local imported scenes;
+there are no runtime third-party asset downloads.
 
-- The nature pack provides foliage, plants, rocks and other nature pieces; it
-  does not contain a farmer character or farmhouse.
-- The farmer, farmhouse trim, garden frames, well and fence in this slice are
-  original hand-built geometry rather than third-party stock assets.
-- The original Quaternius license is CC0, allowing personal, educational and
-  commercial use without attribution requirements.
+The build also runs the main scene headlessly before Web export as a startup
+smoke test.
+
+## Licence note
+The source pages identify the packs as CC0 / Creative Commons Zero. CC0 permits
+reuse, modification and redistribution, including commercial use. Keep this
+file with the project as provenance documentation.
