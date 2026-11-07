@@ -2,6 +2,7 @@ extends StaticBody3D
 
 var state := 0 # 0 empty, 1 growing, 2 ready
 var growth := 0.0
+var last_visual_stage := -1
 const GROWTH_SECONDS := 12.0
 var crop_visual: Node3D
 var label: Label3D
@@ -45,6 +46,10 @@ func _ready() -> void:
 func _process(delta: float) -> void:
     if state != 1: return
     growth += delta
+    var visual_stage := int(floor(growth / GROWTH_SECONDS * 4.0))
+    if visual_stage != last_visual_stage:
+        last_visual_stage = visual_stage
+        _show_crop(clampf(growth / GROWTH_SECONDS, 0.0, 1.0))
     if growth >= GROWTH_SECONDS:
         state = 2
         label.text = "READY TO PICK!"
@@ -76,6 +81,7 @@ func interact() -> void:
         world.seed_count -= 1
         state = 1
         growth = 0.0
+        last_visual_stage = -1
         label.text = "GROWING... WATER TO HELP"
         _show_crop(0.35)
     elif state == 1:
@@ -101,14 +107,30 @@ func _show_crop(height_factor: float) -> void:
     if crop_visual:
         crop_visual.queue_free()
     crop_visual = Node3D.new()
+    crop_visual.name = "QuaterniusCropVisual"
     add_child(crop_visual)
+
+    var world = get_meta("world")
+    var crop_scene: PackedScene = world.get_crop_scene(int(get_instance_id()), height_factor)
+    if crop_scene != null:
+        # Five individual plants create a readable row inside the timber bed.
+        for i in range(5):
+            var plant := crop_scene.instantiate() as Node3D
+            if plant == null: continue
+            plant.position = Vector3(-0.66 + i * 0.33, 0.16, 0)
+            plant.scale = Vector3.ONE * 0.42
+            plant.rotation.y = float(i) * 0.73
+            crop_visual.add_child(plant)
+        return
+
+    # Safe visual fallback for local editor runs before the optional crop pack is downloaded.
     var leaf_color := Color("#5c9a4b") if state == 1 else Color("#e6b94e")
     for i in range(5):
         var stem := MeshInstance3D.new()
         var mesh := CylinderMesh.new()
         mesh.top_radius = 0.035
         mesh.bottom_radius = 0.055
-        mesh.height = 0.75 * height_factor
+        mesh.height = 0.75 * maxf(height_factor, 0.15)
         stem.mesh = mesh
         stem.position = Vector3(-0.55 + i * 0.27, 0.28 + mesh.height * 0.5, 0)
         stem.material_override = _mat(Color("#47783d"))
@@ -116,8 +138,8 @@ func _show_crop(height_factor: float) -> void:
         for side in [-1, 1]:
             var leaf := MeshInstance3D.new()
             var leaf_mesh := SphereMesh.new()
-            leaf_mesh.radius = 0.19 * height_factor
-            leaf_mesh.height = 0.13 * height_factor
+            leaf_mesh.radius = 0.19 * maxf(height_factor, 0.15)
+            leaf_mesh.height = 0.13 * maxf(height_factor, 0.15)
             leaf.mesh = leaf_mesh
             leaf.position = stem.position + Vector3(0.11 * side, 0.17 * height_factor, 0.08 * side)
             leaf.scale = Vector3(1.35, 0.5, 0.65)
