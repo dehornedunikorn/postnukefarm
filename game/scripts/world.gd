@@ -521,12 +521,12 @@ func _replace_farmhouse_with_quaternius() -> void:
 
 func _populate_farm_animals() -> void:
     var placements := {
-        "cow": [Vector3(18, 0, 14), Vector3(21, 0, 19)],
-        "sheep": [Vector3(25, 0, 15), Vector3(28, 0, 19)],
-        "pig": [Vector3(-18, 0, 15)],
-        "horse": [Vector3(29, 0, 5)],
-        "llama": [Vector3(-25, 0, 11)],
-        "dog": [Vector3(13, 0, 12)]
+        "cow": [Vector3(19, 0, 13), Vector3(22, 0, 18)],
+        "sheep": [Vector3(26, 0, 13), Vector3(29, 0, 18)],
+        "pig": [Vector3(19, 0, 22)],
+        "horse": [Vector3(28, 0, 22)],
+        "llama": [Vector3(22, 0, 11)],
+        "dog": [Vector3(16, 0, 18)]
     }
     for species in animal_scenes.keys():
         var spots: Array = placements.get(species, [])
