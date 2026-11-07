@@ -355,6 +355,8 @@ func _spawn_building_asset(key: String, pos: Vector3, scale_factor: float = 1.0,
     if packed == null: return null
     var instance := packed.instantiate() as Node3D
     if instance == null: return null
+    sanitize_model(instance)
+    sanitize_model(instance)
     instance.position = pos
     instance.scale = Vector3.ONE * scale_factor
     instance.rotation.y = yaw
@@ -418,6 +420,18 @@ func _populate_quaternius_buildings() -> void:
     _spawn_building_asset("farm_windmill", Vector3(-32, 0, -27), 1.15)
     _spawn_building_asset("farm_watertower", Vector3(-27, 0, 24), 1.0)
     _spawn_building_asset("farm_silo", Vector3(36, 0, -10), 1.0)
+
+func sanitize_model(root: Node) -> int:
+    var removed := 0
+    for child in root.get_children():
+        if child is MeshInstance3D:
+            var mesh := (child as MeshInstance3D).mesh
+            if mesh == null or mesh.get_surface_count() == 0:
+                child.free()
+                removed += 1
+                continue
+        removed += sanitize_model(child)
+    return removed
 
 func _spawn_model(key: String, pos: Vector3, scale_factor: float, yaw: float = 0.0) -> void:
     if not model_scenes.has(key): return
@@ -537,6 +551,7 @@ func _populate_farm_animals() -> void:
             wanderer.rotation.y = float(i) * 1.1
             var instance := animal_scenes[species].instantiate() as Node3D
             if instance == null: continue
+            sanitize_model(instance)
             instance.scale = Vector3.ONE * (0.78 if species == "cow" or species == "horse" else 0.62)
             wanderer.add_child(instance)
             model_root.add_child(wanderer)
