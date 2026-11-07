@@ -518,8 +518,8 @@ func _build_ui() -> void:
     _touch_button(pad, "▶", Vector2(128,52), "move_right")
     var action := Button.new()
     action.text = "TEND"
-    action.position = Vector2(-116, -96)
     action.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+    action.position = Vector2(-116, -96)
     action.custom_minimum_size = Vector2(96, 72)
     action.add_theme_font_size_override("font_size", 19)
     action.add_theme_color_override("font_color", Color("#fff2d5"))
