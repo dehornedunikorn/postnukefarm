@@ -20,7 +20,7 @@ The Vercel build downloads and imports six free CC0 packs:
 5. **LowPoly RPG Characters:** fantasy character models; OBJ versions are used for reliable browser import.
 6. **LowPoly Animated Farm Animal Pack:** livestock models (cow, sheep, pig, horse, llama and dog); OBJ versions are used for reliable browser import.
 
-The build downloads all six packs from their public CC0 archives. The extractor preserves model dependencies, MTL files and textures, and deduplicates FBX/OBJ variants. Godot imports assets locally during CI; the running game does not fetch models from third-party hosts. The modular medieval kit provides additional architecture pieces alongside the complete village buildings.
+The build downloads all five packs from their public CC0 archives. The extractor preserves model dependencies, MTL files and textures, and deduplicates FBX/OBJ variants. Godot imports assets locally during CI; the running game does not fetch models from third-party hosts. The build filters each pack to the model families actually used in the game, keeping the browser download and import size manageable.
 
 ## Licensing
 The source pages identify these Quaternius packs as CC0. See:
