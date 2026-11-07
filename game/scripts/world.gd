@@ -20,6 +20,7 @@ var flower_keys: Array[String] = []
 var grass_keys: Array[String] = []
 var crop_families: Dictionary = {}
 var character_scenes: Array[PackedScene] = []
+var animal_scenes: Dictionary = {}
 var model_load_status := "Loading the valley's living art..."
 var load_count := 0
 var model_root: Node3D
@@ -252,6 +253,12 @@ func _load_quaternius_models() -> void:
         if path.to_lower().contains("/characters/"):
             character_scenes.append(packed)
             continue
+        if path.to_lower().contains("/animals/"):
+            for species in ["cow", "sheep", "pig", "horse", "llama", "dog"]:
+                if filename.contains(species):
+                    animal_scenes[species] = packed
+                    break
+            continue
         if filename.contains("tree") or filename.contains("pine") or filename.contains("birch"):
             var tree_key := "tree_%d" % tree_keys.size()
             model_scenes[tree_key] = packed
@@ -284,7 +291,8 @@ func _load_quaternius_models() -> void:
 
     if tree_keys.size() > 0:
         _populate_quaternius_forest()
-    model_load_status = "Quaternius CC0 · %d trees · %d bushes · %d flowers · %d crop families" % [tree_keys.size(), bush_keys.size(), flower_keys.size() + clover_keys.size(), crop_families.size()]
+    _populate_farm_animals()
+    model_load_status = "Quaternius CC0 · %d trees · %d bushes · %d flowers · %d crop families · %d animal types" % [tree_keys.size(), bush_keys.size(), flower_keys.size() + clover_keys.size(), crop_families.size(), animal_scenes.size()]
     update_hud()
 
 func _spawn_model(key: String, pos: Vector3, scale_factor: float, yaw: float = 0.0) -> void:
@@ -344,6 +352,25 @@ func _populate_quaternius_forest() -> void:
         for i in range(rock_spots.size()):
             var rock_key: String = rock_keys[i % rock_keys.size()]
             _spawn_model(rock_key, rock_spots[i], randf_range(0.7, 1.25), randf_range(0.0, TAU))
+
+func _populate_farm_animals() -> void:
+    var placements := {
+        "cow": [Vector3(18, 0, 14), Vector3(21, 0, 19)],
+        "sheep": [Vector3(25, 0, 15), Vector3(28, 0, 19)],
+        "pig": [Vector3(-18, 0, 15)],
+        "horse": [Vector3(29, 0, 5)],
+        "llama": [Vector3(-25, 0, 11)],
+        "dog": [Vector3(13, 0, 12)]
+    }
+    for species in animal_scenes.keys():
+        var spots: Array = placements.get(species, [])
+        for i in range(spots.size()):
+            var instance := animal_scenes[species].instantiate() as Node3D
+            if instance == null: continue
+            instance.position = spots[i]
+            instance.scale = Vector3.ONE * (0.78 if species == "cow" or species == "horse" else 0.62)
+            instance.rotation.y = float(i) * 1.1
+            model_root.add_child(instance)
 
 func get_character_scene() -> PackedScene:
     if character_scenes.is_empty(): return null
