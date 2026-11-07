@@ -40,94 +40,9 @@ python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-buildings.z
 download "https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip" "$TMP_DIR/quaternius-characters.zip"
 python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats --prefer-obj
 
-# Quaternius Farm Buildings Pack (CC0). Prefer the official itch archive;
-# fall back to individual public Drive OBJ/MTL files if itch requires a checkout.
-echo "Trying the official Quaternius Farm Buildings itch archive..."
-FARM_ARCHIVE_OK=0
-for farm_url in \
-    "https://quaternius.itch.io/lowpoly-farm-buildings/download/1125896" \
-    "https://quaternius.itch.io/lowpoly-farm-buildings/file/1125896"; do
-    if curl --fail --location --silent --show-error \
-        --user-agent "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36" \
-        --connect-timeout 15 --max-time 90 "$farm_url" -o "$TMP_DIR/farm-buildings.zip" \
-        && unzip -tq "$TMP_DIR/farm-buildings.zip" >/dev/null 2>&1; then
-        FARM_ARCHIVE_OK=1
-        break
-    fi
-done
-if [ "$FARM_ARCHIVE_OK" -eq 1 ]; then
-    python3 scripts/extract_quaternius.py --archive "$TMP_DIR/farm-buildings.zip" --destination assets/quaternius --subdir farm_buildings --include-legacy-formats --prefer-obj
-    echo "Imported the official Quaternius Farm Buildings archive."
-else
-    echo "The itch direct route is unavailable; trying individual public Drive model files."
-# directly by file ID; the public Drive folder itself is quota-limited.
-download_drive_file() {
-    local file_id="$1"
-    local output="$2"
-    mkdir -p "$(dirname "$output")"
-    local browser_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
-    local urls=(
-        "https://drive.usercontent.google.com/download?id=${file_id}&export=download&authuser=0&confirm=t"
-        "https://drive.google.com/uc?export=download&id=${file_id}"
-        "https://drive.google.com/uc?id=${file_id}"
-    )
-    echo "Downloading Quaternius farm model $(basename "$output")..."
-    for url in "${urls[@]}"; do
-        if curl --fail --location --silent --show-error --user-agent "$browser_ua" \
-            --connect-timeout 10 --max-time 20 \
-            "$url" -o "$output"; then
-            if test -s "$output" && ! head -c 256 "$output" | grep -qiE '<!doctype|<html|Google Drive'; then
-                return 0
-            fi
-        fi
-    done
-    rm -f "$output"
-    return 1
-}
-
-FARM_FILES=(
-    "1c18wNK6jsQNnLlOtbHsQE2ZU025jOJZC:Barn.obj"
-    "1Hq_4mGFXOSN8LSn7Bc8Uqclsd1iC1mcw:Barn.mtl"
-    "1-pDoMboAo2NOSwfVi05o45g_WpI8p3Eq:BigBarn.obj"
-    "1GTM3qVnqpfoLdAUlLwh5t3Nl5nWzuedw:BigBarn.mtl"
-    "1ws9VQJWiBfO7Fn7OqacLuPUhMc_mD2zj:ChickenCoop.obj"
-    "120sN8cICfopdALdgOPok9y6kBli5ZbO_:ChickenCoop.mtl"
-    "1c67vRQU0fq_BFkQvbPLnrSs9jMOhxLMq:Fence.obj"
-    "1BflcIA_GP8VhbrNjCLbte2oYpCEJUMpn:Fence.mtl"
-    "1WdM8UaQWUqEUFAdaNIfojuD5-OrgLpuo:Fence2.obj"
-    "1D4xSTXeRrBeZmsMsefdbxX7XqYJBG5w_:Fence2.mtl"
-    "1jH7mW0J8yLQFJ2meQ665UgM6qCZO7txg:OpenBarn.obj"
-    "1oF4PBxaiHvruUfdxcZZmlLauxPyn6LFx:OpenBarn.mtl"
-    "1ymV-FNVd3YOUVEg40wrE2rHhdsl4x_z6:Silo.obj"
-    "19ySIiVmR1FiYKeyvfyWAkXKF80shvmHd:Silo.mtl"
-    "1UCyp7flVDLk7Gw44XynAuTv4maaD159W:Silo_House.obj"
-    "1sRvY5n47pjHzBhhv21cuKfdWI6kF8fR3:Silo_House.mtl"
-    "1JziZu1iGnyIcn8MyZy6oYML06_4EGsn:SmallBarn.obj"
-    "18yIBY_zGV8b_VmZnkceN_s3ppY-LGpHa:SmallBarn.mtl"
-    "1pAck0BU91yY6J7wb8J08oDnOqwHic0Ro:TowerWindmill.obj"
-    "11589R78Oq5zX0eZ-H1-CEZNBYKF2zOcn:TowerWindmill.mtl"
-    "17UrBt3T5Sq9FUfhsojfWmm_FylEHDXfo:WaterTower.obj"
-    "1mpDj4Lf26X4kEMrz6srJd8Zm7TMglF-l:WaterTower.mtl"
-    "19Ku-AHLDBuzkZgbPlThNkaqOrTzmSse7:Well.obj"
-    "1mv3XGu6aMLfM3-zmYnXj-qVmuulwp_D3:Well.mtl"
-    "1nGFuPQaYpTPNJh0F9rAGxvJ49DowUVz5:Windmill.obj"
-    "1BCDCFCGqix4NM9QhESbjzOnX-vf9YQX9:Windmill.mtl"
-)
-FARM_MODEL_COUNT=0
-for item in "${FARM_FILES[@]}"; do
-    file_id="${item%%:*}"
-    filename="${item#*:}"
-    if download_drive_file "$file_id" "assets/quaternius/farm_buildings/OBJ/$filename"; then
-        if [[ "$filename" == *.obj ]]; then
-            FARM_MODEL_COUNT=$((FARM_MODEL_COUNT + 1))
-        fi
-    else
-        echo "Farm Buildings direct download blocked at $filename; stop retrying the quota-limited folder."
-        break
-    fi
-done
-echo "Downloaded $FARM_MODEL_COUNT Quaternius Farm Buildings OBJ models."
-fi
+# Quaternius LowPoly Medieval Village Pack: complete buildings and village props.
+download "https://opengameart.org/sites/default/files/medieval_village_pack_-_dec_2020.zip" "$TMP_DIR/quaternius-village.zip"
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-village.zip" --destination assets/quaternius --subdir village --include-legacy-formats --prefer-obj --list-models
 
 # Quaternius LowPoly Animated Farm Animals: static OBJ geometry for browser stability.
 download "https://opengameart.org/sites/default/files/Farm%20Animals%20by%20%40Quaternius.zip" "$TMP_DIR/quaternius-animals.zip"
