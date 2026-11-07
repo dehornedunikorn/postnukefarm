@@ -378,10 +378,10 @@ func _add_fence_collision(pos: Vector3, yaw: float) -> void:
 func _populate_quaternius_buildings() -> void:
     var home_key := "farm_silo_house" if building_scenes.has("farm_silo_house") else "farm_smallbarn" if building_scenes.has("farm_smallbarn") else "farm_barn" if building_scenes.has("farm_barn") else ""
     if home_key != "":
-        var old_house := get_node_or_null("Farmhouse")
-        if old_house: old_house.queue_free()
         var farmhouse := _spawn_building_asset(home_key, Vector3(9, 0, -7), 1.15)
         if farmhouse:
+            var old_house := get_node_or_null("Farmhouse")
+            if old_house: old_house.queue_free()
             farmhouse.name = "QuaterniusFarmhouse"
             var body := StaticBody3D.new()
             var collision := CollisionShape3D.new()
@@ -393,9 +393,10 @@ func _populate_quaternius_buildings() -> void:
             farmhouse.add_child(body)
 
     if building_scenes.has("farm_well"):
-        var old_well := get_node_or_null("WellPlaceholder")
-        if old_well: old_well.queue_free()
-        _spawn_building_asset("farm_well", Vector3(4.4, 0, -1.2), 0.85)
+        var well := _spawn_building_asset("farm_well", Vector3(4.4, 0, -1.2), 0.85)
+        if well:
+            var old_well := get_node_or_null("WellPlaceholder")
+            if old_well: old_well.queue_free()
 
     if building_scenes.has("farm_fence"):
         var old_fence := get_node_or_null("FencePlaceholder")
