@@ -2,6 +2,8 @@ extends CharacterBody3D
 
 @export var speed := 5.2
 var gravity := 22.0
+var character_animation: AnimationPlayer
+var current_animation := ""
 
 func _ready() -> void:
     var world := get_parent()
@@ -15,6 +17,8 @@ func _ready() -> void:
             avatar.scale = Vector3.ONE * 0.9
             avatar.position.y = 0.0
             add_child(avatar)
+            character_animation = _find_animation_player(avatar)
+            _play_animation_hint("idle")
     else:
         # Development fallback while the Quaternius character archive is unavailable.
         _part(CapsuleMesh.new(), Vector3(0, 1.0, 0), Vector3(0.72, 1.0, 0.42), Color("#6b8060"))
@@ -44,6 +48,24 @@ func _ready() -> void:
     camera.current = true
     camera_pivot.add_child(camera)
 
+func _find_animation_player(node: Node) -> AnimationPlayer:
+    if node is AnimationPlayer:
+        return node as AnimationPlayer
+    for child in node.get_children():
+        var found := _find_animation_player(child)
+        if found != null:
+            return found
+    return null
+
+func _play_animation_hint(hint: String) -> void:
+    if character_animation == null: return
+    for animation_name in character_animation.get_animation_list():
+        if animation_name.to_lower().contains(hint):
+            if current_animation != animation_name:
+                character_animation.play(animation_name)
+                current_animation = animation_name
+            return
+
 func _part(mesh: Mesh, pos: Vector3, dimensions: Vector3, color: Color) -> void:
     var node := MeshInstance3D.new()
     node.mesh = mesh
@@ -68,4 +90,7 @@ func _physics_process(delta: float) -> void:
         velocity.y = 0.0
     if dir.length() > 0.05:
         rotation.y = lerp_angle(rotation.y, atan2(dir.x, dir.z), delta * 9.0)
+        _play_animation_hint("walk")
+    else:
+        _play_animation_hint("idle")
     move_and_slide()
