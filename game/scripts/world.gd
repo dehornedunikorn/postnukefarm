@@ -513,7 +513,7 @@ func _build_ui() -> void:
     menu_style.content_margin_bottom = 24
     card.add_theme_stylebox_override("panel", menu_style)
     card.set_anchors_preset(Control.PRESET_CENTER)
-    var card_width := minf(440.0, get_viewport().get_visible_rect().size.x - 32.0)
+    var card_width := maxf(300.0, minf(440.0, get_viewport().get_visible_rect().size.x - 32.0))
     card.position = Vector2(-card_width * 0.5, -155)
     card.custom_minimum_size = Vector2(card_width, 310)
     menu.add_child(card)
