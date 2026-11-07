@@ -66,10 +66,22 @@ fi
 
 echo "Running headless main-scene smoke test..."
 "$GODOT_BIN" --headless --path "$PROJECT_DIR" --quit-after 3 2>&1 | tee "$TMP_DIR/smoke.log"
-if grep -Eq "^(ERROR:|SCRIPT ERROR:|Parse Error:)" "$TMP_DIR/smoke.log"; then
-    echo "Godot startup smoke test reported errors; refusing to export."
-    exit 1
-fi
+python3 - "$TMP_DIR/smoke.log" <<'PY'
+import sys
+lines = open(sys.argv[1], encoding="utf-8", errors="replace").read().splitlines()
+for index, line in enumerate(lines):
+    if line.startswith("SCRIPT ERROR:") or line.startswith("Parse Error:"):
+        print("Fatal Godot script/parse error:", line)
+        sys.exit(1)
+    if line.startswith("ERROR:"):
+        following = lines[index + 1] if index + 1 < len(lines) else ""
+        # Godot's headless Dummy renderer has no GPU mesh storage; these
+        # null-RID diagnostics are expected in CI and do not affect WebGL.
+        if "mesh_get_surface_count (servers/rendering/dummy/storage/mesh_storage.h:120)" in following:
+            continue
+        print("Unexpected Godot runtime error:", line)
+        sys.exit(1)
+PY
 
 echo "Exporting Godot Web build..."
 "$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-release "Web" "$PROJECT_DIR/build/web/index.html"
