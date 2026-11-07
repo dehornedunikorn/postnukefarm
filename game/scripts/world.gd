@@ -446,7 +446,9 @@ func _spawn_model(key: String, pos: Vector3, scale_factor: float, yaw: float = 0
     elif source is Node3D:
         instance = source.duplicate() as Node3D
     if instance == null: return
-    sanitize_model(instance)
+    if not sanitize_model(instance):
+        instance.free()
+        return
     instance.position = pos
     instance.scale = Vector3.ONE * scale_factor
     instance.rotation.y = yaw
