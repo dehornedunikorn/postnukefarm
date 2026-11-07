@@ -3,15 +3,8 @@ extends Node3D
 const PLAYER_SCRIPT = preload("res://scripts/player.gd")
 const PLOT_SCRIPT = preload("res://scripts/farm_plot.gd")
 
-# Quaternius Stylized Nature MegaKit models (CC0). The GLB files are loaded
-# once from a public mirror; instances are then reused throughout the valley.
-const MODEL_URLS := {
-    "tree_a": "https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/tree1.glb",
-    "tree_b": "https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/tree2.glb",
-    "tree_c": "https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/tree3.glb",
-    "bush": "https://raw.githubusercontent.com/anshaneja5/skyline-run/main/public/assets/models/bush.glb"
-}
-
+# Quaternius CC0 models are bundled locally by the build script. No third-party
+# runtime model downloads or non-Quaternius stock assets are used.
 var player: CharacterBody3D
 var status_label: Label
 var seed_count := 8
@@ -23,6 +16,9 @@ var tree_keys: Array[String] = []
 var bush_keys: Array[String] = []
 var clover_keys: Array[String] = []
 var rock_keys: Array[String] = []
+var flower_keys: Array[String] = []
+var grass_keys: Array[String] = []
+var crop_families: Dictionary = {}
 var model_load_status := "Loading the valley's living art..."
 var load_count := 0
 var model_root: Node3D
@@ -239,70 +235,48 @@ func _collect_model_paths(folder: String, output: Array[String]) -> void:
     dir.list_dir_end()
 
 func _load_quaternius_models() -> void:
-    # Prefer the actual CC0 Standard archive extracted during CI.
     var paths: Array[String] = []
     _collect_model_paths("res://assets/quaternius", paths)
     paths.sort()
     for path in paths:
-        var filename := path.get_file().get_basename().to_lower()
-        var category := ""
-        if filename.contains("tree") or filename.contains("pine") or filename.contains("birch"):
-            category = "tree"
-        elif filename.contains("bush") or filename.contains("shrub"):
-            category = "bush"
-        elif filename.contains("clover") or filename.contains("flower"):
-            category = "clover"
-        elif filename.contains("rock"):
-            category = "rock"
-        if category == "": continue
+        var filename := path.get_file().get_basename().to_lower().replace(" ", "_")
         var packed := ResourceLoader.load(path) as PackedScene
         if packed == null: continue
-        var index := tree_keys.size() if category == "tree" else bush_keys.size() if category == "bush" else clover_keys.size() if category == "clover" else rock_keys.size()
-        var key: String = category + "_" + str(index)
-        model_scenes[key] = packed
-        if category == "tree":
-            tree_keys.append(key)
-        elif category == "bush":
-            bush_keys.append(key)
-        elif category == "clover":
-            clover_keys.append(key)
-        elif category == "rock":
-            rock_keys.append(key)
+
+        if filename.contains("tree") or filename.contains("pine") or filename.contains("birch"):
+            var tree_key := "tree_%d" % tree_keys.size()
+            model_scenes[tree_key] = packed
+            tree_keys.append(tree_key)
+        elif filename.contains("bush") or filename.contains("shrub"):
+            var bush_key := "bush_%d" % bush_keys.size()
+            model_scenes[bush_key] = packed
+            bush_keys.append(bush_key)
+        elif filename.contains("clover"):
+            var clover_key := "clover_%d" % clover_keys.size()
+            model_scenes[clover_key] = packed
+            clover_keys.append(clover_key)
+        elif filename.contains("flower"):
+            var flower_key := "flower_%d" % flower_keys.size()
+            model_scenes[flower_key] = packed
+            flower_keys.append(flower_key)
+        elif filename.contains("grass") or filename.contains("plant"):
+            var grass_key := "grass_%d" % grass_keys.size()
+            model_scenes[grass_key] = packed
+            grass_keys.append(grass_key)
+        elif filename.contains("rock"):
+            var rock_key := "rock_%d" % rock_keys.size()
+            model_scenes[rock_key] = packed
+            rock_keys.append(rock_key)
+        elif filename.begins_with("apple") or filename.begins_with("carrot") or filename.begins_with("corn") or filename.begins_with("lettuce") or filename.begins_with("pumpkin") or filename.begins_with("wheat") or filename.begins_with("tomato") or filename.begins_with("rice") or filename.begins_with("mushroom") or filename.begins_with("watermelon") or filename.begins_with("beet") or filename.begins_with("bamboo") or filename.begins_with("bushberries"):
+            var family := filename.split("_")[0]
+            var variants: Array = crop_families.get(family, [])
+            variants.append(packed)
+            crop_families[family] = variants
 
     if tree_keys.size() > 0:
         _populate_quaternius_forest()
-        model_load_status = "Quaternius nature: %d trees · %d bushes · %d clovers · %d rocks" % [tree_keys.size(), bush_keys.size(), clover_keys.size(), rock_keys.size()]
-        update_hud()
-        return
-
-    # Development fallback when the Standard archive has not been imported locally.
-    for key in MODEL_URLS.keys():
-        var req := HTTPRequest.new()
-        req.timeout = 30.0
-        add_child(req)
-        req.request_completed.connect(_on_model_downloaded.bind(key, req))
-        var err := req.request(MODEL_URLS[key])
-        if err != OK:
-            model_load_status = "Could not start nature model download."
-            req.queue_free()
-
-func _on_model_downloaded(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, key: String, req: HTTPRequest) -> void:
-    req.queue_free()
-    load_count += 1
-    if result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
-        var doc := GLTFDocument.new()
-        var state := GLTFState.new()
-        var err := doc.append_from_buffer(body, "", state)
-        if err == OK:
-            model_scenes[key] = doc.generate_scene(state)
-            if key.begins_with("tree"):
-                tree_keys.append(key)
-            elif key == "bush":
-                bush_keys.append(key)
-    if load_count >= MODEL_URLS.size():
-        _populate_quaternius_forest()
-        model_load_status = "Quaternius nature loaded" if tree_keys.size() > 0 else "Nature models unavailable — reconnect to load"
-        update_hud()
+    model_load_status = "Quaternius CC0 · %d trees · %d bushes · %d flowers · %d crop families" % [tree_keys.size(), bush_keys.size(), flower_keys.size() + clover_keys.size(), crop_families.size()]
+    update_hud()
 
 func _spawn_model(key: String, pos: Vector3, scale_factor: float, yaw: float = 0.0) -> void:
     if not model_scenes.has(key): return
@@ -342,24 +316,35 @@ func _populate_quaternius_forest() -> void:
         var key: String = tree_keys[i % tree_keys.size()]
         _spawn_model(key, placements[i], [1.15, 1.35, 1.0, 1.25][i % 4], float(i) * 0.61)
     if not bush_keys.is_empty():
-        for i in range(28):
+        for i in range(32):
             var x := randf_range(-23, 24)
             var z := randf_range(-24, 26)
             if abs(x) < 13 and abs(z) < 13: continue
             var bush_key: String = bush_keys[i % bush_keys.size()]
             _spawn_model(bush_key, Vector3(x, 0, z), randf_range(0.55, 0.9), randf_range(0.0, TAU))
-    if not clover_keys.is_empty():
-        for i in range(42):
-            var x := randf_range(-26, 26)
-            var z := randf_range(-26, 26)
-            if abs(x) < 9 and abs(z) < 9: continue
-            var clover_key: String = clover_keys[i % clover_keys.size()]
-            _spawn_model(clover_key, Vector3(x, 0, z), randf_range(0.45, 0.8), randf_range(0.0, TAU))
+    var ground_flora := clover_keys + flower_keys + grass_keys
+    if not ground_flora.is_empty():
+        for i in range(90):
+            var x := randf_range(-28, 28)
+            var z := randf_range(-28, 28)
+            if abs(x) < 10 and abs(z) < 10: continue
+            var flora_key: String = ground_flora[i % ground_flora.size()]
+            _spawn_model(flora_key, Vector3(x, 0, z), randf_range(0.35, 0.8), randf_range(0.0, TAU))
     if not rock_keys.is_empty():
         var rock_spots := [Vector3(-20,0,-8), Vector3(-14,0,-13), Vector3(-21,0,-14), Vector3(23,0,-15), Vector3(29,0,-8), Vector3(21,0,19), Vector3(-25,0,19), Vector3(14,0,29)]
         for i in range(rock_spots.size()):
             var rock_key: String = rock_keys[i % rock_keys.size()]
             _spawn_model(rock_key, rock_spots[i], randf_range(0.7, 1.25), randf_range(0.0, TAU))
+
+func get_crop_scene(family_index: int, stage: float) -> PackedScene:
+    if crop_families.is_empty(): return null
+    var families: Array = crop_families.keys()
+    families.sort()
+    var family: String = families[posmod(family_index, families.size())]
+    var variants: Array = crop_families[family]
+    if variants.is_empty(): return null
+    var stage_index := clampi(int(round(clampf(stage, 0.0, 1.0) * float(variants.size() - 1))), 0, variants.size() - 1)
+    return variants[stage_index] as PackedScene
 func _build_player() -> void:
     player = CharacterBody3D.new()
     player.set_script(PLAYER_SCRIPT)
