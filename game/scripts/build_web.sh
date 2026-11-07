@@ -26,27 +26,23 @@ mkdir -p build/web assets/quaternius
 
 # Quaternius Stylized Nature MegaKit Standard: 68 glTF/GLB models.
 download "https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip" "$TMP_DIR/quaternius.zip"
-python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius.zip" --destination assets/quaternius
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius.zip" --destination assets/quaternius --include "tree,pine,birch,bush,shrub,clover,flower,grass,plant,rock,pathrock"
 
 # Quaternius LowPoly Crops Pack: crop families and growth stages.
 download "https://opengameart.org/sites/default/files/nature_crops_pack_by_quaternius.zip" "$TMP_DIR/quaternius-crops.zip"
-python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-crops.zip" --destination assets/quaternius --subdir crops --include-legacy-formats --prefer-obj
-
-# Quaternius LowPoly Medieval Buildings: modular village structures.
-download "https://opengameart.org/sites/default/files/Modular%20Medieval%20Pack%20by%20%40Quaternius_0.zip" "$TMP_DIR/quaternius-buildings.zip"
-python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-buildings.zip" --destination assets/quaternius --subdir buildings --include-legacy-formats --prefer-obj
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-crops.zip" --destination assets/quaternius --subdir crops --include-legacy-formats --prefer-obj --include "apple,carrot,corn,lettuce,pumpkin,wheat,tomato,rice,mushroom,watermelon,beet,bamboo,bushberries"
 
 # Quaternius LowPoly RPG Characters: six rigged fantasy avatars.
 download "https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip" "$TMP_DIR/quaternius-characters.zip"
-python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats --prefer-obj
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats --prefer-obj --include "warrior,ranger,wizard,monk,cleric,rogue"
 
 # Quaternius LowPoly Medieval Village Pack: complete buildings and village props.
 download "https://opengameart.org/sites/default/files/medieval_village_pack_-_dec_2020.zip" "$TMP_DIR/quaternius-village.zip"
-python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-village.zip" --destination assets/quaternius --subdir village --include-legacy-formats --prefer-obj --list-models
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-village.zip" --destination assets/quaternius --subdir village --include-legacy-formats --prefer-obj --list-models --include "house_1,house_2,house_3,house_4,inn,blacksmith,mill,sawmill,stable,fence,well,gazebo,marketstand_1,marketstand_2,cart,barrel,crate,hay,bell_tower,bonfire_lit"
 
 # Quaternius LowPoly Animated Farm Animals: static OBJ geometry for browser stability.
 download "https://opengameart.org/sites/default/files/Farm%20Animals%20by%20%40Quaternius.zip" "$TMP_DIR/quaternius-animals.zip"
-python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-animals.zip" --destination assets/quaternius --subdir animals --include-legacy-formats --prefer-obj
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-animals.zip" --destination assets/quaternius --subdir animals --include-legacy-formats --prefer-obj --include "cow,sheep,pig,horse,llama,dog"
 
 download "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" "$TMP_DIR/godot.zip"
 unzip -q "$TMP_DIR/godot.zip" -d "$TMP_DIR/godot"
