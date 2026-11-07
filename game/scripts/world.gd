@@ -439,13 +439,24 @@ func _build_ui() -> void:
     add_child(layer)
     var panel := PanelContainer.new()
     panel.position = Vector2(18, 16)
-    panel.custom_minimum_size = Vector2(320, 108)
+    panel.custom_minimum_size = Vector2(340, 112)
+    var hud_style := StyleBoxFlat.new()
+    hud_style.bg_color = Color("#1b3428", 0.88)
+    hud_style.border_color = Color("#c4a36b", 0.9)
+    hud_style.set_border_width_all(2)
+    hud_style.set_corner_radius_all(12)
+    hud_style.content_margin_left = 16
+    hud_style.content_margin_right = 16
+    hud_style.content_margin_top = 12
+    hud_style.content_margin_bottom = 12
+    panel.add_theme_stylebox_override("panel", hud_style)
     layer.add_child(panel)
     var v := VBoxContainer.new()
     panel.add_child(v)
     var title := Label.new()
     title.text = "EVERDAWN  /  THE GREEN VALE"
-    title.add_theme_font_size_override("font_size", 20)
+    title.add_theme_font_size_override("font_size", 19)
+    title.add_theme_color_override("font_color", Color("#f2d49a"))
     v.add_child(title)
     status_label = Label.new()
     status_label.text = "DAY 01   •   SEEDS 08   •   HARVEST 00\nWASD / arrows / touch • E to tend the beds"
@@ -453,6 +464,7 @@ func _build_ui() -> void:
 
     var hint := Label.new()
     hint.text = "A quiet valley, where every seed has a story."
+    hint.add_theme_color_override("font_color", Color("#f0e2c3"))
     hint.position = Vector2(20, 132)
     layer.add_child(hint)
 
@@ -471,15 +483,35 @@ func _build_ui() -> void:
     action.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
     action.custom_minimum_size = Vector2(96, 72)
     action.add_theme_font_size_override("font_size", 19)
+    action.add_theme_color_override("font_color", Color("#fff2d5"))
+    var action_style := StyleBoxFlat.new()
+    action_style.bg_color = Color("#416b48")
+    action_style.border_color = Color("#d5b778")
+    action_style.set_border_width_all(2)
+    action_style.set_corner_radius_all(14)
+    action.add_theme_stylebox_override("normal", action_style)
+    var action_hover := action_style.duplicate() as StyleBoxFlat
+    action_hover.bg_color = Color("#5b8a5a")
+    action.add_theme_stylebox_override("hover", action_hover)
     action.pressed.connect(_interact_nearby)
     layer.add_child(action)
 
     var menu := ColorRect.new()
     menu.name = "TitleScreen"
-    menu.color = Color(0.035, 0.065, 0.045, 0.88)
+    menu.color = Color(0.025, 0.055, 0.04, 0.78)
     menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     layer.add_child(menu)
     var card := PanelContainer.new()
+    var menu_style := StyleBoxFlat.new()
+    menu_style.bg_color = Color("#203b2d", 0.96)
+    menu_style.border_color = Color("#d0ad72")
+    menu_style.set_border_width_all(3)
+    menu_style.set_corner_radius_all(20)
+    menu_style.content_margin_left = 24
+    menu_style.content_margin_right = 24
+    menu_style.content_margin_top = 24
+    menu_style.content_margin_bottom = 24
+    card.add_theme_stylebox_override("panel", menu_style)
     card.set_anchors_preset(Control.PRESET_CENTER)
     var card_width := minf(440.0, get_viewport().get_visible_rect().size.x - 32.0)
     card.position = Vector2(-card_width * 0.5, -155)
@@ -492,22 +524,40 @@ func _build_ui() -> void:
     var game_title := Label.new()
     game_title.text = "EVERDAWN"
     game_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    game_title.add_theme_font_size_override("font_size", 44)
+    game_title.add_theme_font_size_override("font_size", 46)
+    game_title.add_theme_color_override("font_color", Color("#f4d49a"))
     menu_stack.add_child(game_title)
     var subtitle := Label.new()
     subtitle.text = "THE GREEN VALE"
     subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     subtitle.add_theme_font_size_override("font_size", 18)
+    subtitle.add_theme_color_override("font_color", Color("#c5d9b3"))
     menu_stack.add_child(subtitle)
     var story := Label.new()
     story.text = "A little farm. A living valley.\nYour story starts with one seed."
     story.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     story.add_theme_font_size_override("font_size", 16)
+    story.add_theme_color_override("font_color", Color("#f1e5d0"))
     menu_stack.add_child(story)
     var start_button := Button.new()
     start_button.text = "ENTER THE GREEN VALE"
     start_button.custom_minimum_size = Vector2(0, 54)
     start_button.add_theme_font_size_override("font_size", 18)
+    start_button.add_theme_color_override("font_color", Color("#fff4dc"))
+    var start_style := StyleBoxFlat.new()
+    start_style.bg_color = Color("#537d4e")
+    start_style.border_color = Color("#e2c28a")
+    start_style.set_border_width_all(2)
+    start_style.set_corner_radius_all(12)
+    start_style.content_margin_top = 8
+    start_style.content_margin_bottom = 8
+    start_button.add_theme_stylebox_override("normal", start_style)
+    var start_hover := start_style.duplicate() as StyleBoxFlat
+    start_hover.bg_color = Color("#6c985c")
+    start_button.add_theme_stylebox_override("hover", start_hover)
+    var start_pressed := start_style.duplicate() as StyleBoxFlat
+    start_pressed.bg_color = Color("#385b3a")
+    start_button.add_theme_stylebox_override("pressed", start_pressed)
     menu_stack.add_child(start_button)
     start_button.pressed.connect(func() -> void:
         menu.queue_free()
@@ -517,6 +567,7 @@ func _build_ui() -> void:
     controls.text = "WASD / arrows / touch to move  •  E / TEND to farm"
     controls.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     controls.add_theme_font_size_override("font_size", 12)
+    controls.add_theme_color_override("font_color", Color("#c7d0bd"))
     menu_stack.add_child(controls)
 
 func _touch_button(parent: Control, caption: String, pos: Vector2, action: String) -> void:
