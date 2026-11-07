@@ -55,7 +55,7 @@ download_drive_file() {
     echo "Downloading Quaternius farm model $(basename "$output")..."
     for url in "${urls[@]}"; do
         if curl --fail --location --silent --show-error --user-agent "$browser_ua" \
-            --connect-timeout 15 --max-time 45 --retry 1 --retry-delay 1 \
+            --connect-timeout 10 --max-time 20 \
             "$url" -o "$output"; then
             if test -s "$output" && ! head -c 256 "$output" | grep -qiE '<!doctype|<html|Google Drive'; then
                 return 0
@@ -103,7 +103,8 @@ for item in "${FARM_FILES[@]}"; do
             FARM_MODEL_COUNT=$((FARM_MODEL_COUNT + 1))
         fi
     else
-        echo "Farm Buildings file unavailable: $filename"
+        echo "Farm Buildings direct download blocked at $filename; stop retrying the quota-limited folder."
+        break
     fi
 done
 echo "Downloaded $FARM_MODEL_COUNT Quaternius Farm Buildings OBJ models."
