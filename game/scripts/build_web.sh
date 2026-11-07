@@ -33,5 +33,8 @@ unzip -q "$TMP_DIR/templates.tpz" -d "$TMP_DIR/templates"
 cp -R "$TMP_DIR/templates/templates/." "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
 
 "$GODOT_BIN" --headless --path "$PROJECT_DIR" --editor --import
+# Smoke-test the main scene before exporting so GDScript/runtime startup errors
+# fail the deployment instead of shipping a broken canvas.
+"$GODOT_BIN" --headless --path "$PROJECT_DIR" --quit-after 3
 "$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-release "Web" "$PROJECT_DIR/build/web/index.html"
 test -s "$PROJECT_DIR/build/web/index.html"
