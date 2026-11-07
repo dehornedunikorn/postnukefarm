@@ -279,7 +279,7 @@ func _load_quaternius_models() -> void:
     for path in paths:
         var lower_path := path.to_lower()
         var pack_group := "nature"
-        for group_name in ["farm_buildings", "buildings", "characters", "animals", "crops"]:
+        for group_name in ["farm_buildings", "buildings", "village", "characters", "animals", "crops"]:
             if lower_path.contains("/" + group_name + "/"):
                 pack_group = group_name
                 break
@@ -306,6 +306,9 @@ func _load_quaternius_models() -> void:
             continue
         if pack_group == "buildings":
             building_scenes["medieval_" + filename] = packed
+            continue
+        if pack_group == "village":
+            building_scenes["village_" + filename] = packed
             continue
         if pack_group == "crops":
             var family := filename.split("_")[0]
@@ -375,8 +378,20 @@ func _add_fence_collision(pos: Vector3, yaw: float) -> void:
     body.add_child(collision)
     model_root.add_child(body)
 
+func _find_building_key(prefix: String, tokens: Array[String]) -> String:
+    for token in tokens:
+        for key in building_scenes.keys():
+            if str(key).begins_with(prefix) and str(key).contains(token):
+                return str(key)
+    return ""
+
 func _populate_quaternius_buildings() -> void:
-    var home_key := "farm_silo_house" if building_scenes.has("farm_silo_house") else "farm_smallbarn" if building_scenes.has("farm_smallbarn") else "farm_barn" if building_scenes.has("farm_barn") else ""
+    var home_key := _find_building_key("farm_", ["silo_house", "smallbarn", "barn"])
+    if home_key == "":
+        home_key = _find_building_key("village_", ["house", "farmhouse", "cottage", "inn", "tavern"])
+    if home_key == "":
+        home_key = _find_building_key("medieval_", ["house", "cottage"])
+
     if home_key != "":
         var farmhouse := _spawn_building_asset(home_key, Vector3(9, 0, -7), 1.15)
         if farmhouse:
@@ -392,36 +407,67 @@ func _populate_quaternius_buildings() -> void:
             body.add_child(collision)
             farmhouse.add_child(body)
 
-    if building_scenes.has("farm_well"):
-        var well := _spawn_building_asset("farm_well", Vector3(4.4, 0, -1.2), 0.85)
+    var well_key := _find_building_key("farm_", ["well"])
+    if well_key == "":
+        well_key = _find_building_key("village_", ["well"])
+    if well_key == "":
+        well_key = _find_building_key("medieval_", ["well"])
+    if well_key != "":
+        var well := _spawn_building_asset(well_key, Vector3(4.4, 0, -1.2), 0.85)
         if well:
             var old_well := get_node_or_null("WellPlaceholder")
             if old_well: old_well.queue_free()
 
-    if building_scenes.has("farm_fence"):
-        var old_fence := get_node_or_null("FencePlaceholder")
-        if old_fence: old_fence.queue_free()
-        # Enclose a dedicated grazing paddock with a clear entrance on the west side.
-        for x in [18.0, 24.0, 30.0]:
-            _spawn_building_asset("farm_fence", Vector3(x, 0, 8), 1.0)
-            _spawn_building_asset("farm_fence", Vector3(x, 0, 24), 1.0)
-            _add_fence_collision(Vector3(x, 0, 8), 0.0)
-            _add_fence_collision(Vector3(x, 0, 24), 0.0)
-        for z in [11.0, 23.0]:
-            _spawn_building_asset("farm_fence", Vector3(15, 0, z), 1.0, PI * 0.5)
-        for z in [11.0, 17.0, 23.0]:
-            _spawn_building_asset("farm_fence", Vector3(33, 0, z), 1.0, PI * 0.5)
-            _add_fence_collision(Vector3(33, 0, z), PI * 0.5)
-        if building_scenes.has("farm_fence2"):
-            _spawn_building_asset("farm_fence2", Vector3(15, 0, 17), 1.0, PI * 0.5)
-        _add_fence_collision(Vector3(15, 0, 11), PI * 0.5)
-        _add_fence_collision(Vector3(15, 0, 23), PI * 0.5)
+    var fence_key := _find_building_key("farm_", ["fence"])
+    if fence_key == "":
+        fence_key = _find_building_key("village_", ["fence"])
+    if fence_key != "":
+        var first_fence := _spawn_building_asset(fence_key, Vector3(18, 0, 8), 1.0)
+        if first_fence:
+            var old_fence := get_node_or_null("FencePlaceholder")
+            if old_fence: old_fence.queue_free()
+            _add_fence_collision(Vector3(18, 0, 8), 0.0)
+            # Enclose a dedicated grazing paddock with a clear entrance on the west side.
+            for x in [24.0, 30.0]:
+                _spawn_building_asset(fence_key, Vector3(x, 0, 8), 1.0)
+                _spawn_building_asset(fence_key, Vector3(x, 0, 24), 1.0)
+                _add_fence_collision(Vector3(x, 0, 8), 0.0)
+                _add_fence_collision(Vector3(x, 0, 24), 0.0)
+            _spawn_building_asset(fence_key, Vector3(18, 0, 24), 1.0)
+            _add_fence_collision(Vector3(18, 0, 24), 0.0)
+            for z in [11.0, 23.0]:
+                _spawn_building_asset(fence_key, Vector3(15, 0, z), 1.0, PI * 0.5)
+                _spawn_building_asset(fence_key, Vector3(33, 0, z), 1.0, PI * 0.5)
+                _add_fence_collision(Vector3(15, 0, z), PI * 0.5)
+                _add_fence_collision(Vector3(33, 0, z), PI * 0.5)
+            var gate_key := _find_building_key("farm_", ["fence2"])
+            if gate_key == "":
+                gate_key = _find_building_key("village_", ["gate"])
+            if gate_key != "":
+                _spawn_building_asset(gate_key, Vector3(15, 0, 17), 1.0, PI * 0.5)
 
-    _spawn_building_asset("farm_barn", Vector3(31, 0, -22), 1.0)
-    _spawn_building_asset("farm_chickencoop", Vector3(26, 0, 21), 0.82)
-    _spawn_building_asset("farm_windmill", Vector3(-32, 0, -27), 1.15)
-    _spawn_building_asset("farm_watertower", Vector3(-27, 0, 24), 1.0)
-    _spawn_building_asset("farm_silo", Vector3(36, 0, -10), 1.0)
+    var barn_key := _find_building_key("farm_", ["barn"])
+    if barn_key == "":
+        barn_key = _find_building_key("village_", ["barn", "stable", "shed", "blacksmith"])
+    if barn_key != "":
+        _spawn_building_asset(barn_key, Vector3(31, 0, -22), 1.0)
+
+    var coop_key := _find_building_key("farm_", ["chickencoop"])
+    if coop_key == "":
+        coop_key = _find_building_key("village_", ["coop", "stable"])
+    if coop_key != "":
+        _spawn_building_asset(coop_key, Vector3(26, 0, 21), 0.82)
+
+    var windmill_key := _find_building_key("farm_", ["windmill"])
+    if windmill_key == "":
+        windmill_key = _find_building_key("village_", ["windmill", "mill"])
+    if windmill_key != "":
+        _spawn_building_asset(windmill_key, Vector3(-32, 0, -27), 1.15)
+
+    var market_key := _find_building_key("village_", ["market", "cart", "wagon"])
+    if market_key != "":
+        _spawn_building_asset(market_key, Vector3(-10, 0, 19), 0.9)
+
 
 func sanitize_model(root: Node) -> bool:
     if root is MeshInstance3D:
