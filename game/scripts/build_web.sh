@@ -78,10 +78,18 @@ unzip -q "$TMP_DIR/templates.tpz" -d "$TMP_DIR/templates"
 cp -R "$TMP_DIR/templates/templates/." "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
 
 echo "Importing all Quaternius assets in Godot..."
-"$GODOT_BIN" --headless --path "$PROJECT_DIR" --editor --import
+"$GODOT_BIN" --headless --path "$PROJECT_DIR" --editor --import 2>&1 | tee "$TMP_DIR/import.log"
+if grep -Eq "^(ERROR:|SCRIPT ERROR:|Parse Error:)" "$TMP_DIR/import.log"; then
+    echo "Godot asset import reported errors; refusing to export."
+    exit 1
+fi
 
 echo "Running headless main-scene smoke test..."
-"$GODOT_BIN" --headless --path "$PROJECT_DIR" --quit-after 3
+"$GODOT_BIN" --headless --path "$PROJECT_DIR" --quit-after 3 2>&1 | tee "$TMP_DIR/smoke.log"
+if grep -Eq "^(ERROR:|SCRIPT ERROR:|Parse Error:)" "$TMP_DIR/smoke.log"; then
+    echo "Godot startup smoke test reported errors; refusing to export."
+    exit 1
+fi
 
 echo "Exporting Godot Web build..."
 "$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-release "Web" "$PROJECT_DIR/build/web/index.html"
