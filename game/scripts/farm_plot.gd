@@ -114,16 +114,23 @@ func _show_crop(height_factor: float) -> void:
     var crop_scene: PackedScene = world.get_crop_scene(int(get_instance_id()), height_factor)
     if crop_scene != null:
         # Five individual plants create a readable row inside the timber bed.
+        var added_plants := 0
         for i in range(5):
             var plant := crop_scene.instantiate() as Node3D
             if plant == null: continue
+            var valid_plant := true
             if world.has_method("sanitize_model"):
-                world.call("sanitize_model", plant)
+                valid_plant = bool(world.call("sanitize_model", plant))
+            if not valid_plant:
+                plant.free()
+                continue
             plant.position = Vector3(-0.66 + i * 0.33, 0.16, 0)
             plant.scale = Vector3.ONE * 0.42
             plant.rotation.y = float(i) * 0.73
             crop_visual.add_child(plant)
-        return
+            added_plants += 1
+        if added_plants > 0:
+            return
 
     # Safe visual fallback for local editor runs before the optional crop pack is downloaded.
     var leaf_color := Color("#5c9a4b") if state == 1 else Color("#e6b94e")
