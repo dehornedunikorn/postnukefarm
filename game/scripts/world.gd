@@ -428,18 +428,18 @@ func _populate_quaternius_buildings() -> void:
     if fence_key == "":
         fence_key = _find_building_key("medieval_", ["fence"])
     if fence_key != "":
-        var first_fence := _spawn_building_asset(fence_key, Vector3(18, 0, 8), 1.0)
+        var first_fence := _spawn_building_asset(fence_key, Vector3(17.25, 0, 8), 1.0)
         if first_fence:
             var old_fence := get_node_or_null("FencePlaceholder")
             if old_fence: old_fence.queue_free()
-            _add_fence_collision(Vector3(18, 0, 8), 0.0)
-            for x in [21.0, 25.5, 30.0]:
+            _add_fence_collision(Vector3(17.25, 0, 8), 0.0)
+            _spawn_building_asset(fence_key, Vector3(17.25, 0, 24), 1.0)
+            _add_fence_collision(Vector3(17.25, 0, 24), 0.0)
+            for x in [21.75, 26.25, 30.75]:
                 _spawn_building_asset(fence_key, Vector3(x, 0, 8), 1.0)
                 _spawn_building_asset(fence_key, Vector3(x, 0, 24), 1.0)
                 _add_fence_collision(Vector3(x, 0, 8), 0.0)
                 _add_fence_collision(Vector3(x, 0, 24), 0.0)
-            _spawn_building_asset(fence_key, Vector3(16.5, 0, 24), 1.0)
-            _add_fence_collision(Vector3(16.5, 0, 24), 0.0)
             for z in [10.25, 14.75, 19.25, 23.75]:
                 if absf(z - 19.25) > 0.1:
                     _spawn_building_asset(fence_key, Vector3(15, 0, z), 1.0, PI * 0.5)
