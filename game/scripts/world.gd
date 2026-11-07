@@ -142,6 +142,30 @@ func _build_environment() -> void:
     pond.position = Vector3(-17, 0.0, -9)
     pond.material_override = _mat(Color("#4c9ca6"), 0.18)
     add_child(pond)
+    var pond_body := StaticBody3D.new()
+    var pond_collision := CollisionShape3D.new()
+    var pond_shape := CylinderShape3D.new()
+    pond_shape.radius = 3.9
+    pond_shape.height = 2.2
+    pond_collision.shape = pond_shape
+    pond_collision.position = Vector3(-17, 1.05, -9)
+    pond_body.add_child(pond_collision)
+    add_child(pond_body)
+
+    # Invisible perimeter keeps the player inside the designed valley.
+    for edge in range(4):
+        var boundary := StaticBody3D.new()
+        var boundary_collision := CollisionShape3D.new()
+        var boundary_shape := BoxShape3D.new()
+        if edge < 2:
+            boundary_shape.size = Vector3(120, 5, 1)
+            boundary.position = Vector3(0, 2.5, -59.5 if edge == 0 else 59.5)
+        else:
+            boundary_shape.size = Vector3(1, 5, 120)
+            boundary.position = Vector3(-59.5 if edge == 2 else 59.5, 2.5, 0)
+        boundary_collision.shape = boundary_shape
+        boundary.add_child(boundary_collision)
+        add_child(boundary)
 
     model_root = Node3D.new()
     model_root.name = "QuaterniusNature"
@@ -331,6 +355,16 @@ func _spawn_model(key: String, pos: Vector3, scale_factor: float, yaw: float = 0
         trunk_collision.position.y = 1.25 * scale_factor
         trunk_body.add_child(trunk_collision)
         model_root.add_child(trunk_body)
+    elif key.begins_with("rock_"):
+        var rock_body := StaticBody3D.new()
+        rock_body.position = pos
+        var rock_collision := CollisionShape3D.new()
+        var rock_shape := SphereShape3D.new()
+        rock_shape.radius = 0.5 * scale_factor
+        rock_collision.shape = rock_shape
+        rock_collision.position.y = 0.45 * scale_factor
+        rock_body.add_child(rock_collision)
+        model_root.add_child(rock_body)
 
 func _populate_quaternius_forest() -> void:
     if tree_keys.is_empty(): return
