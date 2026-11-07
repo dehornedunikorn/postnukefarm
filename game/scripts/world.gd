@@ -2,6 +2,7 @@ extends Node3D
 
 const PLAYER_SCRIPT = preload("res://scripts/player.gd")
 const PLOT_SCRIPT = preload("res://scripts/farm_plot.gd")
+const ANIMAL_SCRIPT = preload("res://scripts/grazing_animal.gd")
 
 # Quaternius CC0 models are bundled locally by the build script. No third-party
 # runtime model downloads or non-Quaternius stock assets are used.
@@ -407,12 +408,15 @@ func _populate_farm_animals() -> void:
     for species in animal_scenes.keys():
         var spots: Array = placements.get(species, [])
         for i in range(spots.size()):
+            var wanderer := Node3D.new()
+            wanderer.set_script(ANIMAL_SCRIPT)
+            wanderer.position = spots[i]
+            wanderer.rotation.y = float(i) * 1.1
             var instance := animal_scenes[species].instantiate() as Node3D
             if instance == null: continue
-            instance.position = spots[i]
             instance.scale = Vector3.ONE * (0.78 if species == "cow" or species == "horse" else 0.62)
-            instance.rotation.y = float(i) * 1.1
-            model_root.add_child(instance)
+            wanderer.add_child(instance)
+            model_root.add_child(wanderer)
 
 func get_character_scene() -> PackedScene:
     if character_scenes.is_empty(): return null
