@@ -19,6 +19,7 @@ var rock_keys: Array[String] = []
 var flower_keys: Array[String] = []
 var grass_keys: Array[String] = []
 var crop_families: Dictionary = {}
+var character_scenes: Array[PackedScene] = []
 var model_load_status := "Loading the valley's living art..."
 var load_count := 0
 var model_root: Node3D
@@ -248,6 +249,9 @@ func _load_quaternius_models() -> void:
         var packed := ResourceLoader.load(path) as PackedScene
         if packed == null: continue
 
+        if path.to_lower().contains("/characters/"):
+            character_scenes.append(packed)
+            continue
         if filename.contains("tree") or filename.contains("pine") or filename.contains("birch"):
             var tree_key := "tree_%d" % tree_keys.size()
             model_scenes[tree_key] = packed
@@ -340,6 +344,10 @@ func _populate_quaternius_forest() -> void:
         for i in range(rock_spots.size()):
             var rock_key: String = rock_keys[i % rock_keys.size()]
             _spawn_model(rock_key, rock_spots[i], randf_range(0.7, 1.25), randf_range(0.0, TAU))
+
+func get_character_scene() -> PackedScene:
+    if character_scenes.is_empty(): return null
+    return character_scenes[0]
 
 func get_crop_scene(family_index: int, stage: float) -> PackedScene:
     if crop_families.is_empty(): return null
