@@ -16,6 +16,7 @@ var tree_keys: Array[String] = []
 var bush_keys: Array[String] = []
 var clover_keys: Array[String] = []
 var rock_keys: Array[String] = []
+var pathrock_keys: Array[String] = []
 var flower_keys: Array[String] = []
 var grass_keys: Array[String] = []
 var crop_families: Dictionary = {}
@@ -283,6 +284,10 @@ func _load_quaternius_models() -> void:
             var grass_key := "grass_%d" % grass_keys.size()
             model_scenes[grass_key] = packed
             grass_keys.append(grass_key)
+        elif filename.contains("rockpath"):
+            var path_key := "pathrock_%d" % pathrock_keys.size()
+            model_scenes[path_key] = packed
+            pathrock_keys.append(path_key)
         elif filename.contains("rock"):
             var rock_key := "rock_%d" % rock_keys.size()
             model_scenes[rock_key] = packed
@@ -352,6 +357,12 @@ func _populate_quaternius_forest() -> void:
             if abs(x) < 10 and abs(z) < 10: continue
             var flora_key: String = ground_flora[i % ground_flora.size()]
             _spawn_model(flora_key, Vector3(x, 0, z), randf_range(0.35, 0.8), randf_range(0.0, TAU))
+    if not pathrock_keys.is_empty():
+        for i in range(18):
+            var z := 12.5 - float(i) * 1.45
+            var x := sin(float(i) * 0.55) * 1.0
+            var path_key: String = pathrock_keys[i % pathrock_keys.size()]
+            _spawn_model(path_key, Vector3(x, 0.015, z), randf_range(0.75, 0.95), randf_range(-0.12, 0.12))
     if not rock_keys.is_empty():
         var rock_spots := [Vector3(-20,0,-8), Vector3(-14,0,-13), Vector3(-21,0,-14), Vector3(23,0,-15), Vector3(29,0,-8), Vector3(21,0,19), Vector3(-25,0,19), Vector3(14,0,29)]
         for i in range(rock_spots.size()):
