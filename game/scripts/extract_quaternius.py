@@ -13,6 +13,7 @@ parser.add_argument("--archive", required=True)
 parser.add_argument("--destination", required=True)
 parser.add_argument("--subdir", default="")
 parser.add_argument("--include-legacy-formats", action="store_true")
+parser.add_argument("--prefer-obj", action="store_true")
 args = parser.parse_args()
 
 archive = Path(args.archive)
@@ -33,6 +34,9 @@ with zipfile.ZipFile(archive) as zf:
     if args.include_legacy_formats:
         model_exts.update({".fbx", ".obj"})
     models = [n for n in names if Path(n).suffix.lower() in model_exts and not n.endswith("/")]
+    if args.prefer_obj:
+        obj_stems = {Path(n).stem.lower() for n in names if Path(n).suffix.lower() == ".obj"}
+        models = [n for n in models if not (Path(n).suffix.lower() == ".fbx" and Path(n).stem.lower() in obj_stems)]
     if not models:
         raise SystemExit("No supported 3D models found in Quaternius archive")
 
