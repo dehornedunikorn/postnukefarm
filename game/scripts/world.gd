@@ -277,32 +277,43 @@ func _load_quaternius_models() -> void:
     paths.sort()
     var loaded_asset_names: Dictionary = {}
     for path in paths:
+        var lower_path := path.to_lower()
+        var pack_group := "nature"
+        for group_name in ["farm_buildings", "buildings", "characters", "animals", "crops"]:
+            if lower_path.contains("/" + group_name + "/"):
+                pack_group = group_name
+                break
         var asset_name := path.get_file().get_basename().to_lower()
-        if loaded_asset_names.has(asset_name):
+        var dedupe_key := pack_group + "_" + asset_name
+        if loaded_asset_names.has(dedupe_key):
             continue
-        loaded_asset_names[asset_name] = true
+        loaded_asset_names[dedupe_key] = true
         var filename := asset_name.replace(" ", "_")
         var packed := ResourceLoader.load(path) as PackedScene
         if packed == null: continue
 
-        if path.to_lower().contains("/characters/"):
+        if pack_group == "characters":
             character_scenes.append(packed)
             continue
-        if path.to_lower().contains("/animals/"):
+        if pack_group == "animals":
             for species in ["cow", "sheep", "pig", "horse", "llama", "dog"]:
                 if filename.contains(species):
                     animal_scenes[species] = packed
                     break
             continue
-        if path.to_lower().contains("/buildings/"):
-            building_scenes[filename] = packed
+        if pack_group == "farm_buildings":
+            building_scenes["farm_" + filename] = packed
             continue
-        if path.to_lower().contains("/crops/"):
+        if pack_group == "buildings":
+            building_scenes["medieval_" + filename] = packed
+            continue
+        if pack_group == "crops":
             var family := filename.split("_")[0]
             var variants: Array = crop_families.get(family, [])
             variants.append(packed)
             crop_families[family] = variants
             continue
+
         if filename.contains("tree") or filename.contains("pine") or filename.contains("birch"):
             var tree_key := "tree_%d" % tree_keys.size()
             model_scenes[tree_key] = packed
@@ -335,9 +346,78 @@ func _load_quaternius_models() -> void:
     if tree_keys.size() > 0:
         _populate_quaternius_forest()
     _populate_farm_animals()
-    _replace_farmhouse_with_quaternius()
-    model_load_status = "Quaternius CC0 · %d trees · %d bushes · %d flowers · %d crop families · %d animal types" % [tree_keys.size(), bush_keys.size(), flower_keys.size() + clover_keys.size(), crop_families.size(), animal_scenes.size()]
+    _populate_quaternius_buildings()
+    model_load_status = "Quaternius CC0 · %d trees · %d bushes · %d flowers · %d crop families · %d animal types · %d buildings" % [tree_keys.size(), bush_keys.size(), flower_keys.size() + clover_keys.size(), crop_families.size(), animal_scenes.size(), building_scenes.size()]
     update_hud()
+
+func _spawn_building_asset(key: String, pos: Vector3, scale_factor: float = 1.0, yaw: float = 0.0) -> Node3D:
+    var packed: PackedScene = building_scenes.get(key)
+    if packed == null: return null
+    var instance := packed.instantiate() as Node3D
+    if instance == null: return null
+    instance.position = pos
+    instance.scale = Vector3.ONE * scale_factor
+    instance.rotation.y = yaw
+    model_root.add_child(instance)
+    return instance
+
+func _add_fence_collision(pos: Vector3, yaw: float) -> void:
+    var body := StaticBody3D.new()
+    body.position = pos
+    var collision := CollisionShape3D.new()
+    var shape := BoxShape3D.new()
+    shape.size = Vector3(5.9, 1.15, 0.22) if absf(yaw) < 0.1 else Vector3(0.22, 1.15, 5.9)
+    collision.shape = shape
+    collision.position.y = 0.57
+    body.add_child(collision)
+    model_root.add_child(body)
+
+func _populate_quaternius_buildings() -> void:
+    var home_key := "farm_silo_house" if building_scenes.has("farm_silo_house") else "farm_smallbarn" if building_scenes.has("farm_smallbarn") else "farm_barn" if building_scenes.has("farm_barn") else ""
+    if home_key != "":
+        var old_house := get_node_or_null("Farmhouse")
+        if old_house: old_house.queue_free()
+        var farmhouse := _spawn_building_asset(home_key, Vector3(9, 0, -7), 1.15)
+        if farmhouse:
+            farmhouse.name = "QuaterniusFarmhouse"
+            var body := StaticBody3D.new()
+            var collision := CollisionShape3D.new()
+            var shape := BoxShape3D.new()
+            shape.size = Vector3(7.2, 4.0, 6.0)
+            collision.shape = shape
+            collision.position.y = 2.0
+            body.add_child(collision)
+            farmhouse.add_child(body)
+
+    if building_scenes.has("farm_well"):
+        var old_well := get_node_or_null("WellPlaceholder")
+        if old_well: old_well.queue_free()
+        _spawn_building_asset("farm_well", Vector3(4.4, 0, -1.2), 0.85)
+
+    if building_scenes.has("farm_fence"):
+        var old_fence := get_node_or_null("FencePlaceholder")
+        if old_fence: old_fence.queue_free()
+        # Enclose a dedicated grazing paddock with a clear entrance on the west side.
+        for x in [18.0, 24.0, 30.0]:
+            _spawn_building_asset("farm_fence", Vector3(x, 0, 8), 1.0)
+            _spawn_building_asset("farm_fence", Vector3(x, 0, 24), 1.0)
+            _add_fence_collision(Vector3(x, 0, 8), 0.0)
+            _add_fence_collision(Vector3(x, 0, 24), 0.0)
+        for z in [11.0, 23.0]:
+            _spawn_building_asset("farm_fence", Vector3(15, 0, z), 1.0, PI * 0.5)
+        for z in [11.0, 17.0, 23.0]:
+            _spawn_building_asset("farm_fence", Vector3(33, 0, z), 1.0, PI * 0.5)
+            _add_fence_collision(Vector3(33, 0, z), PI * 0.5)
+        if building_scenes.has("farm_fence2"):
+            _spawn_building_asset("farm_fence2", Vector3(15, 0, 17), 1.0, PI * 0.5)
+        _add_fence_collision(Vector3(15, 0, 11), PI * 0.5)
+        _add_fence_collision(Vector3(15, 0, 23), PI * 0.5)
+
+    _spawn_building_asset("farm_barn", Vector3(31, 0, -22), 1.0)
+    _spawn_building_asset("farm_chickencoop", Vector3(26, 0, 21), 0.82)
+    _spawn_building_asset("farm_windmill", Vector3(-32, 0, -27), 1.15)
+    _spawn_building_asset("farm_watertower", Vector3(-27, 0, 24), 1.0)
+    _spawn_building_asset("farm_silo", Vector3(36, 0, -10), 1.0)
 
 func _spawn_model(key: String, pos: Vector3, scale_factor: float, yaw: float = 0.0) -> void:
     if not model_scenes.has(key): return
