@@ -32,9 +32,10 @@ func _ready() -> void:
     randomize()
     _build_environment()
     _build_farm()
-    _build_player()
     _build_ui()
     _load_quaternius_models()
+    # Instantiate the player after local Quaternius scenes are ready.
+    _build_player()
 
 func _unhandled_input(event: InputEvent) -> void:
     if player != null and player.is_physics_processing() and event is InputEventKey:
