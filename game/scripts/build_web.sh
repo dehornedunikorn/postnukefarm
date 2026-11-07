@@ -34,7 +34,7 @@ python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-crops.zip" 
 
 # Quaternius LowPoly RPG Characters: six fantasy avatars; static OBJ for browser stability.
 download "https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip" "$TMP_DIR/quaternius-characters.zip"
-python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats --prefer-obj --include "ranger" --exclude "bow,staff,sword,dagger,shield,axe"
+python3 scripts/extract_quaternius.py --archive "$TMP_DIR/quaternius-characters.zip" --destination assets/quaternius --subdir characters --include-legacy-formats --prefer-obj --include "ranger" --exclude "bow,staff,sword,dagger,shield,axe" --one-per-prefix
 
 # Quaternius LowPoly Medieval Village Pack: complete buildings and village props.
 download "https://opengameart.org/sites/default/files/medieval_village_pack_-_dec_2020.zip" "$TMP_DIR/quaternius-village.zip"
